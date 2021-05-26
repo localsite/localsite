@@ -94,7 +94,7 @@ strVar += "                https:\/\/fabriceleven.com\/design\/clever-way-to-cha
 strVar += "              <i id=\"showLocations\" class=\"material-icons\" style=\"font-size:24px;display:none\">&#xE313;<\/i>";
 strVar += "              <i id=\"hideLocations\"  class=\"material-icons\" style=\"font-size:24px;cursor:pointer;\">&#xE409;<\/i>";
 strVar += "            <\/div>";
-strVar += "            <div class=\"filterClickText locationTabText\">State...<\/div><!-- Entire State -->";
+strVar += "            <div class=\"filterClickText locationTabText\">States and Counties...<\/div><!-- Entire State -->";
 strVar += "          <\/div>";
 strVar += "        <\/div>";
 strVar += "";
@@ -1631,7 +1631,7 @@ function jsLoaded(root) {
 		  	loadScript(root + 'js/d3.v5.min.js', function(results) { // BUG - change so map-filters.js does not require this on it's load
 		    	loadScript(root + 'js/localsite.js', function(results) {
 		    		loadScript(root + 'js/map.js', function(results) {
-			  			loadSearchFilters(root,1); // Uses dual_map library in localsite.js for community_data_root
+			  			loadSearchFilters(root,1); // Uses localsite_app library in localsite.js for community_data_root
 			  		});
 			  		if (param.shownav) {
 			  			loadScript(root + 'js/navigation.js', function(results) {});
@@ -1745,7 +1745,7 @@ function get_localsite_root() { // TEMP HERE
             }
             if (location.host.indexOf('localhost') >= 0) {
               // Enable to test embedding without locathost repo in site root. Rename your localsite folder.
-              root = "https://model.earth/localsite/";
+              //root = "https://model.earth/localsite/";
             }
             localsite_repo = root; // Save to reduce DOM hits
             return (root);

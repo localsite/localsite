@@ -156,7 +156,7 @@ function loadFromSheet(whichmap,whichmap2,dp,basemaps1,basemaps2,attempts,callba
 
   if (typeof d3 !== 'undefined') {
     if (!dp.dataset && !dp.googleDocID) {
-      console.log('CANCEL loadFromSheet - no dataset selected for top map.');
+      console.log('CANCEL loadFromSheet. No dataset selected for top map. May not be one for state.');
       $("#" + whichmap).hide();
       $("#data-section").hide();
       $(".keywordField").hide();
@@ -177,6 +177,9 @@ function loadFromSheet(whichmap,whichmap2,dp,basemaps1,basemaps2,attempts,callba
     }
     let map = document.querySelector('#' + whichmap)._leaflet_map; // Recall existing map
     var container = L.DomUtil.get(map);
+    // dp.zoom = 18; // TEMP - Causes map to start with extreme close-up, then zooms out to about 5.
+    // Otherwise starts with 7ish and zooms to 5ish.
+    console.log("dp.zoom " + dp.zoom);
     if (container == null) { // Initialize map
       map = L.map(whichmap, {
         center: mapCenter,
@@ -198,7 +201,19 @@ function loadFromSheet(whichmap,whichmap2,dp,basemaps1,basemaps2,attempts,callba
       // Placing map.whenReady or map.on('load') here did not resolve
       map.setView(mapCenter,dp.zoom);
       */
+      map.on('click', function() {
+        if (location.host.indexOf('localhost') >= 0) {
+          //alert('Toggle scrollwheel zoom')
+        }
+        if (this.scrollWheelZoom.enabled()) {
+          this.scrollWheelZoom.disable();
+        }
+        else {
+          this.scrollWheelZoom.enable();
+        }
+      })
     } else {
+      console.log("dp.zoom 2 " + dp.zoom);
       map.setView(mapCenter,dp.zoom);
     }
     let map2 = {};
@@ -250,7 +265,7 @@ function loadFromSheet(whichmap,whichmap2,dp,basemaps1,basemaps2,attempts,callba
       })
     } else if (dp.googleDocID) {
       // 
-      loadScript(dual_map.modelearth_data_root() + '/localsite/map/neighborhood/js/tabletop.js', function(results) {
+      loadScript(localsite_app.modelearth_data_root() + '/localsite/map/neighborhood/js/tabletop.js', function(results) {
 
         tabletop = Tabletop.init( { key: dp.googleDocID, // from constants.js
           callback: function(data, tabletop) { 
@@ -313,6 +328,9 @@ function loadFromSheet(whichmap,whichmap2,dp,basemaps1,basemaps2,attempts,callba
 }
 
 function processOutput(dp,map,map2,whichmap,whichmap2,basemaps1,basemaps2,callback) {
+  if (typeof map === 'undefined') {
+    console.log("processOutput: map undefined");
+  }
   dp.scale = getScale(dp.data, dp.scaleType, dp.valueColumn);
   dp.group = L.layerGroup();
   dp.group2 = L.layerGroup();
@@ -443,6 +461,7 @@ function populateMap(whichmap, dp, callback) { // From JSON within page
     var circle;
     let defaults = {};
     defaults.zoom = 7;
+
     if (dp.latitude && dp.longitude) {
       mapCenter = [dp.latitude,dp.longitude]; 
     } else {
@@ -450,6 +469,7 @@ function populateMap(whichmap, dp, callback) { // From JSON within page
     }
 
     dp = mix(dp,defaults); // Gives priority to dp
+    console.log("populateMap dp.zoom " + dp.zoom);
 
     var map = L.map(whichmap,{
       center: mapCenter,
@@ -931,7 +951,7 @@ function loadMap1(calledBy, show, dp) { // Called by index.html, map-embed.js an
   let hash = getHash();
 
   $("#dataList").html("");
-  $("#detaillist").html("<img src='" + dual_map.localsite_root() + "img/icon/loading.gif' style='margin:40px; width:120px'>");
+  $("#detaillist").html("<img src='" + localsite_app.localsite_root() + "img/icon/loading.gif' style='margin:40px; width:120px'>");
   // 
 
   //if (!show && param["go"]) {
@@ -1012,9 +1032,9 @@ function loadMap1(calledBy, show, dp) { // Called by index.html, map-embed.js an
     this.getContainer()._leaflet_map = this;
   });
 
-  let community_root = dual_map.community_data_root();
+  let community_root = localsite_app.community_data_root();
   //let state_root = "/georgia-data/";
-  //let state_root = dual_map.custom_data_root();
+  //let state_root = localsite_app.custom_data_root();
   let state_abbreviation = hash.state || "GA";
 
   let dp1 = {}
@@ -1030,9 +1050,6 @@ function loadMap1(calledBy, show, dp) { // Called by index.html, map-embed.js an
   let theState = $("#state_select").find(":selected").val();
   if (!theState && param["state"]) {
     theState = param["state"].toUpperCase();
-  }
-  if (!theState) {
-    //theState = "GA";
   }
   if (theState != "") {
     let kilometers_wide = $("#state_select").find(":selected").attr("km");
@@ -1069,7 +1086,7 @@ function loadMap1(calledBy, show, dp) { // Called by index.html, map-embed.js an
     //} else {
     //  // Older data
     //  dp1.valueColumn = "Prepared";
-    //  dp1.dataset = dual_map.custom_data_root()  + "farmfresh/farmersmarkets-" + state_abbreviation + ".csv";
+    //  dp1.dataset = localsite_app.custom_data_root()  + "farmfresh/farmersmarkets-" + state_abbreviation + ".csv";
     //}
     dp1.name = "Local Farms"; // To remove
     dp1.dataTitle = "Farm Fresh Produce";
@@ -1142,7 +1159,7 @@ function loadMap1(calledBy, show, dp) { // Called by index.html, map-embed.js an
       } else if (show == "360") {
         dp1.listTitle = "Birdseye Views";
         //  https://model.earth/community-data/us/state/GA/VirtualTourSites.csv
-        dp1.dataset =  dual_map.custom_data_root() + "360/GeorgiaPowerSites.csv";
+        dp1.dataset =  localsite_app.custom_data_root() + "360/GeorgiaPowerSites.csv";
 
       } else if (show == "recycling" || show == "transfer" || show == "recyclers" || show == "inert" || show == "landfills") { // recycling-processors
         if (!param.state || param.state == "GA") {
@@ -1226,9 +1243,9 @@ function loadMap1(calledBy, show, dp) { // Called by index.html, map-embed.js an
         //dp1.listSubtitle = "Smart & Sustainable Movement of Goods & Services";
         dp1.industryListTitle = "Mobility Tech";
 
-        console.log("map.js loading " + dual_map.custom_data_root() + "communities/map-georgia-smart.csv");
+        console.log("map.js loading " + localsite_app.custom_data_root() + "communities/map-georgia-smart.csv");
 
-        dp1.dataset =  dual_map.custom_data_root() + "communities/map-georgia-smart.csv";
+        dp1.dataset =  localsite_app.custom_data_root() + "communities/map-georgia-smart.csv";
         dp1.listInfo = "Includes Georgia Smart Community Projects";
         dp1.search = {"In Title": "title", "In Description": "description", "In Website URL": "website", "In Address": "address", "In City Name": "city", "In Zip Code" : "zip"};
         dp1.markerType = "google";
@@ -1262,7 +1279,7 @@ function loadMap1(calledBy, show, dp) { // Called by index.html, map-embed.js an
         dp1.listLocation = false;
         dp1.addLink = "https://www.georgia.org/covid19response"; // Not yet used
 
-      } else if (show == "suppliers" || show == "ppe") { 
+      } else if (show == "suppliers" || show == "ppe") {
 
         // https://docs.google.com/spreadsheets/d/1bqMTVgaMpHIFQBNdiyMe3ZeMMr_lp9qTgzjdouRJTKI/edit?usp=sharing
         dp1.listTitle = "Georgia COVID-19 Response"; // Appears at top of list
@@ -1367,6 +1384,8 @@ function loadMap1(calledBy, show, dp) { // Called by index.html, map-embed.js an
       }
 
   } // end state GA
+
+  console.log("loadMap1 dp1.zoom " + dp1.zoom);
 
   // Load the map using settings above
 
@@ -1495,7 +1514,7 @@ function loadGeos(geo, attempts, callback) {
 
     //Load in contents of CSV file
     if (theState) {
-      d3.csv(dual_map.community_data_root() + "us/state/" + theState + "/" + theState + "counties.csv").then(function(myData,error) {
+      d3.csv(localsite_app.community_data_root() + "us/state/" + theState + "/" + theState + "counties.csv").then(function(myData,error) {
         if (error) {
           //alert("error")
           console.log("Error loading file. " + error);
