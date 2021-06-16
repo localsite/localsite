@@ -80,6 +80,9 @@ $(document).ready(function () {
 		$(".si-btn").hide();
 	}
 	catArray = [];
+	if(location.host.indexOf('localhost') >= 0) {
+		console.log("Loaded Harmonized System (HS) codes");
+	}
 	$.get(localsite_app.community_data_root() + 'global/hs/harmonized-system.txt', function(data) {
 		var catLines = data.split("\n");
 		
@@ -588,7 +591,9 @@ function filterClickLocation() {
     // TO DO: Display cities, etc. somehow without clicking submenu.
     // 
 }
-
+if(param.select == "counties") { // TODO: Change select= to another name
+    filterClickLocation();
+}
 function locationFilterChange(selectedValue,selectedGeo) {
 	let hash = getHash();
 	var useCookies = false; // Would need Cookies from site repo.
@@ -743,7 +748,7 @@ function showCounties(attempts) {
 
 
 		//Load in contents of CSV file
-		if (theState.length > 0) {
+		if (theState.length == 2) {
 			d3.csv(localsite_app.community_data_root() + "us/state/" + theState + "/" + theState + "counties.csv").then(function(myData,error) {
 				if (error) {
 					alert("error")
@@ -1370,22 +1375,22 @@ function displayHexagonMenu(layerName,siteObject) {
   //$("#iconMenu").append(iconMenu);
     $("#honeyMenuHolder").show();
 }
-// Laurie Henisey
 function thumbClick(show,path) {
-	let hash = getHash();
+	let hash = getHashOnly(); // Not hiddenhash
 	hash.show = show;
-	delete hiddenhash.show;
-	delete param.show;
-	if (typeof params != 'undefined') {
-		delete params.show;
-	}
 	delete hash.cat;
 	delete hash.naics;
 	delete hash.m; // Birdseye view
 	if (path && !window.location.pathname.includes(path)) {
 		var hashString = decodeURIComponent($.param(hash));
 		window.location = "/localsite/" + path + "#" + hashString;
-	} else {
+	} else { // Remain in current page
+        delete hiddenhash.show;
+        delete hiddenhash.naics;
+        delete param.show;
+        if (typeof params != 'undefined') {
+            delete params.show;
+        }
 		$(".bigThumbMenuContent").removeClass("bigThumbActive");
 		$(".bigThumbMenuContent[show='" + show +"']").addClass("bigThumbActive");
 		goHash(hash);
@@ -1787,15 +1792,20 @@ function googPlacesApp() {
   var app = new Vue({ 
     el: '#app',
     mounted() {
-      // BUG Give Google script time to load before calling google.maps.places.Autocomplete
-      // FIXED! - Rework this - might not need setTimeout here now...
-      setTimeout(() => {
-        this.autocomplete = new google.maps.places.Autocomplete(
-          document.getElementById('searchloc'),
-          {types: ['establishment', 'geocode']}
-        );
-        this.autocomplete.addListener('place_changed', this.getPlaceData);
-      },10)
+    	
+	      // BUG Give Google script time to load before calling google.maps.places.Autocomplete
+	      // FIXED! - Rework this - might not need setTimeout here now...
+	      //setTimeout(() => {
+	        this.autocomplete = new google.maps.places.Autocomplete(
+	          document.getElementById('searchloc'),
+	          {types: ['establishment', 'geocode'],
+                componentRestrictions: {country: "us"}}
+	        );
+	        //console.log("google.maps.places.Autocomplete: ");
+	        //console.log(this.autocomplete);
+	        this.autocomplete.addListener('place_changed', this.getPlaceData);
+	      //},10)
+		  
     },
     data: {
       lat: '',
@@ -1862,13 +1872,15 @@ function hashChanged() {
 
 	let hash = getHash();
 	//alert("hash.state " + hash.state);
-	console.log("hashChanged from prior geo: " + priorHash.geo + " to " + hash.geo);
+	console.log("map-filters.js hashChanged from prior geo: " + priorHash.geo + " to " + hash.geo);
 	
 	// For PPE embed, also in map.js. Will likely change
 	if (!hash.show) {
 		// For embed link
-		hash.show = param.show;
-		hiddenhash.show = param.show;
+        if (param.show) {
+		  hash.show = param.show;
+		  hiddenhash.show = param.show;
+        }
 	}
 	if (!hash.state) {
 		// For embed link
@@ -1919,6 +1931,8 @@ function hashChanged() {
             if ($("#sidecolumn .catList").is(":visible")) {
                 $("#selected_states").hide();
             }
+
+            $(".layerclass." + hash.show).show();
         //});
 
 
@@ -2039,19 +2053,22 @@ function hashChanged() {
 
    		// Potential BugBug - this runs after initial map load, not needed (but okay as long as zoom is not set).
    		console.log("Recenter map")
-   		let theState = $("#state_select").find(":selected").val();
-        if (theState != "") {
-          let kilometers_wide = $("#state_select").find(":selected").attr("km");
-          //zoom = 1/kilometers_wide * 1800000;
-  
-          if (theState == "HI") { // Hawaii
-              zoom = 6
-          } else if (kilometers_wide > 1000000) { // Alaska
-              zoom = 4
-          }
-          let lat = $("#state_select").find(":selected").attr("lat");
-          let lon = $("#state_select").find(":selected").attr("lon");
-          mapCenter = [lat,lon];
+        if($("#state_select").find(":selected").val()) {
+       		let theState = $("#state_select").find(":selected").val();
+            if (theState != "") {
+              let kilometers_wide = $("#state_select").find(":selected").attr("km");
+              //zoom = 1/kilometers_wide * 1800000;
+      
+              if (theState == "HI") { // Hawaii
+                  zoom = 6
+              } else if (kilometers_wide > 1000000) { // Alaska
+                  zoom = 4
+              }
+              let lat = $("#state_select").find(":selected").attr("lat");
+              let lon = $("#state_select").find(":selected").attr("lon");
+              //alert("lat " + lat + " lon " + lon)
+              mapCenter = [lat,lon];
+            }
         }
 	}
 	if (hash.state) {
@@ -2061,6 +2078,7 @@ function hashChanged() {
 	}
 	// Before hash.state to utilize initial lat/lon
 	if (hash.lat != priorHash.lat || hash.lon != priorHash.lon) {
+        //alert("hash.lat " + hash.lat + " priorHash.lat " + priorHash.lat)
 	    $("#lat").val(hash.lat);
 	    $("#lon").val(hash.lon);
 	    mapCenter = [hash.lat,hash.lon];
@@ -2094,6 +2112,18 @@ function hashChanged() {
 			}
 		}
 		$("#state_select").val(hash.state);
+
+        //let imageUrl = "https://model.earth/us-states/images/backgrounds/1280x720/landscape/georgia.jpg";
+        //$("#state-landscape-image").css('background-image', 'url(' + imageUrl + ')');
+
+        //let theState = $("#state_select").find(":selected").val();
+        let theStateName = $("#state_select").find(":selected").text();
+        let theStateNameLowercase = theStateName.toLowerCase();
+
+        let imageUrl = "https://model.earth/us-states/images/backgrounds/1280x720/landscape/" + theStateNameLowercase.replace(/\s+/g, '-') + ".jpg";
+        let imageUrl_scr = "url(" + imageUrl + ")";
+        $("#state-landscape-image").css('background-image', imageUrl_scr);
+
 		if (hash.state != "GA") {
 			$(".regionFilter").hide();
 			$(".geo-limited").hide();
@@ -2101,12 +2131,12 @@ function hashChanged() {
 			$(".regionFilter").show();
 			$(".geo-US13").show();
 		}
-		if (!hash.state) {
-			$(".locationTabText").text("States and counties...");
-			$("#filterLocations").hide();
-			$("#industryListHolder").hide(); // Remove once national naics are loaded.
+		if (hash.state && hash.state.length == 2) {
+            $(".locationTabText").text($("#state_select").find(":selected").text());
 		} else {
-			$(".locationTabText").text($("#state_select").find(":selected").text());
+			$(".locationTabText").text("States and counties...");
+            $("#filterLocations").hide();
+            $("#industryListHolder").hide(); // Remove once national naics are loaded.
 		}
 		//'geo':'', 
 		updateHash({'regiontitle':'', 'lat':'', 'lon':''});
@@ -2115,7 +2145,7 @@ function hashChanged() {
 	$(".locationTabText").attr("title",$(".locationTabText").text());
 	if (hash.m != priorHash.m) {
 		var mapframe;
-		$("#mapframe").hide();
+		$("#mapframe").hide(); $("#iframeCover").hide();
 		$("#mapframe").prop("src", "about:blank");
 		if (hash.m) {
 	    	if (hash.m == "ej") {
@@ -2134,7 +2164,7 @@ function hashChanged() {
 	    	}
 	    	if (mapframe) {
 	    		$("#mapframe").prop("src", mapframe);
-				$("#mapframe").show();
+				$("#mapframe").show(); $("#iframeCover").show();
 				window.scrollTo({
 			      top: $('#mapframe').offset().top - 95,
 			      left: 0
@@ -2155,9 +2185,57 @@ function hashChanged() {
 	if (hash.catmethod) {
 		$("#catmethod").val(hash.catmethod);
 	}
-	if (hash.indicators) {
-		$("#indicators").val(hash.indicators);
-	}
+	if (hash.indicators != priorHash.indicators) {
+        //alert("Selected hash.indicators " + hash.indicators);
+        //$("#indicators").prop("selectedIndex", 0).value("Selected hash.indicators " + hash.indicators);
+
+        //$("#indicators").prepend("<option value='" + hash.indicators + "' selected='selected'>" + hash.indicators + "</option>");
+	   $("#indicators").val(hash.indicators);
+       if (!$("#indicators").val()) { // Select first one
+           $('#indicators option').each(function () {
+                if ($(this).css('display') != 'none') {
+                    $(this).prop("selected", true);
+                    return false;
+                }
+            });
+        }
+
+        /*
+        if (hash.indicators) {
+           $('#indicators option').each(function () {
+                if ($(this).val() == 'JOBS' || $(this).val() == 'VADD') {
+                    $(this).prop("selected", true);
+                    alert("select")
+                    //return false;
+                }
+            });
+        }
+        */
+    }
+
+    if (hash.set != priorHash.set) {
+        if (hash.set == "air") {
+            $('#pageTitle').text('Air and Climate')
+        } else if (hash.set == "water") {
+            $('#pageTitle').text('Water Use and Quality')
+        } else if (hash.set == "land") {
+            $('#pageTitle').text('Land Use')
+        } else if (hash.set == "energy") {
+            $('#pageTitle').text('Energy Use')
+        } else if (hash.set == "prosperity") {
+            $('#pageTitle').text('Jobs and Value Added')
+        } else if (hash.set == "health") {
+            $('#pageTitle').text('Health Impact')
+        }
+        $("#impactIcons div").removeClass("active");
+        if (hash.set) {
+            const capitalizeSetName = hash.set.toLowerCase().replace(/\b[a-z]/g, function(letter) {
+                return letter.toUpperCase();
+            });
+            $("#impactIcons div:contains(" + capitalizeSetName + ")").addClass("active");
+        }
+    }
+
 	/*
 	// Moved back to map.js
 	if (hash.show != priorHash.show) {
@@ -2272,7 +2350,8 @@ function renderMapShapes(whichmap, hash) { // whichGeoRegion is not yet applied.
 
 			              // Was used by applyStyle
 			              ////neighbors = topojson.neighbors(topoob.objects.data.geometries);
-			              neighbors = topojson.neighbors(topoob.arcs); // .properties
+                          // comented out May 29, 2021 due to "topojson is not defined" error.
+			              //neighbors = topojson.neighbors(topoob.arcs); // .properties
 
 			              // ADD geometries  see https://observablehq.com/@d3/choropleth
 			              //topodata = topojson.feature(topoob, topoob.objects.data)

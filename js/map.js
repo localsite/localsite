@@ -100,13 +100,13 @@ function hashChangedMap() {
   }
 
 
-  if (hash.show != priorHashMap.show) {
+  if (hash.show !== priorHashMap.show) {
     //applyIO(hiddenhash.naics);
     loadMap1("hashChanged() in map-filters.js", hash.show);
-  } else if (hash.state && hash.state != priorHashMap.state) {
+  } else if (hash.state && hash.state !== priorHashMap.state) {
     // Why are new map points not appearing
     loadMap1("hashChanged() in map.js new state " + hash.state, hash.show);
-  } else if (hash.cat != priorHashMap.cat) {
+  } else if (hash.cat !== priorHashMap.cat) {
     loadMap1("hashChanged() in map.js new cat " + hash.cat, hash.show);
   }
   priorHashMap = getHash();
@@ -245,7 +245,7 @@ function loadFromSheet(whichmap,whichmap2,dp,basemaps1,basemaps2,attempts,callba
     // We are currently loading dp.dataset from a CSV file.
     // Later we will check if the filename ends with .csv
 
-    if (dp.dataset && (dp.dataset.toLowerCase().includes(".json") || dp.datatype == "json")) { // To Do: only check that it ends with .json
+    if (dp.dataset && (dp.dataset.toLowerCase().includes(".json") || dp.datatype === "json")) { // To Do: only check that it ends with .json
       $.getJSON(dp.dataset, function (data) {
         dp.data = readJsonData(data, dp.numColumns, dp.valueColumn);
         processOutput(dp,map,map2,whichmap,whichmap2,basemaps1,basemaps2,function(results){
@@ -360,13 +360,13 @@ function processOutput(dp,map,map2,whichmap,whichmap2,basemaps1,basemaps2,callba
   overlays1[dp.dataTitle] = dp.group;
   overlays2[dp.dataTitle] = dp.group2;
 
-  if (layerControl[whichmap] != undefined) {
+  if (layerControl[whichmap] !== undefined) {
     // Remove existing instance of layer
     //layerControl[whichmap].removeLayer(overlays[dp.dataTitle]); // Remove from control 
     //map.removeLayer(overlays[dp.dataTitle]); // Remove from map
   }
 
-  if (layerControl[whichmap] != undefined && dp.group) {
+  if (layerControl[whichmap] !== undefined && dp.group) {
       //layerControl[whichmap].removeLayer(dp.group);
   }
 
@@ -618,7 +618,16 @@ function addIcons(dp,map,map2) {
 
     iconColorRGB = hex2rgb(iconColor);
     iconName = dp.iconName;
-    var busIcon = L.IconMaterial.icon({ /* Cannot read property 'icon' of undefined */
+    if (typeof L === 'undefined') {
+      if (location.host.indexOf('localhost') >= 0) {
+        alert("Leaflet L not yet loaded");
+      }
+    } else if (typeof L.IconMaterial === 'undefined') {
+      if (location.host.indexOf('localhost') >= 0) {
+        alert("Leaflet L.IconMaterial undefined = leaflet.icon-material.js not loaded");
+      }
+    }
+    var busIcon = L.IconMaterial.icon({ /* Cannot read property 'icon' of undefined = leaflet.icon-material.js not loaded */
       icon: iconName,            // Name of Material icon - star
       iconColor: '#fff',         // Material icon color (could be rgba, hex, html name...)
       markerColor: 'rgba(' + iconColorRGB + ',0.7)',  // Marker fill color
@@ -951,7 +960,7 @@ function loadMap1(calledBy, show, dp) { // Called by index.html, map-embed.js an
   let hash = getHash();
 
   $("#dataList").html("");
-  $("#detaillist").html("<img src='" + localsite_app.localsite_root() + "img/icon/loading.gif' style='margin:40px; width:120px'>");
+  $("#detaillist").html("<img src='" + localsite_app.localsite_root() + "img/icon/loading.gif' style='margin:40px; width:120px' alt='Loading'>");
   // 
 
   //if (!show && param["go"]) {
@@ -968,7 +977,6 @@ function loadMap1(calledBy, show, dp) { // Called by index.html, map-embed.js an
   // To do: limit to when layer changes
   //$(".layerclass").hide(); // Hides suppliers, and other layer-specific css
   
-  //alert("show: " + show);
   // Note: light_nolabels does not work on https. Remove if so. Was positron_light_nolabels.
   var basemaps1 = {
     //'Grayscale' : L.tileLayer(mbUrl, {id: 'mapbox.light', attribution: mbAttr}), // No longer works, may require registration change.
@@ -1069,13 +1077,21 @@ function loadMap1(calledBy, show, dp) { // Called by index.html, map-embed.js an
   if (show && show.length) {
     $("." + show).show(); // Show layer's divs, after hiding all layer-specific above.
   }
-  $(".headerOffset2").height($("#filterFieldsHolder").height() + "px"); // Adjust incase reveal/hide changes height.
+  $(".filterbarOffset").height($("#filterFieldsHolder").height() + "px"); // Adjust incase reveal/hide changes height.
 
   // Google Sheets must be published with File > Publish to Web to avoid error: "blocked by CORS policy: No 'Access-Control-Allow-Origin' header" 
 
   //if (dp && dp[0]) { // Parameters set in page or layer json
   if (dp && dp.dataset) { // Parameters set in page or layer json
     dp1 = dp;
+
+  } else if (show == "beyondcarbon") {
+    dp1.listTitle = "Beyond Carbon";
+    dp1.dataset = "https://assets.bbhub.io/dotorg/sites/40/2019/05/beyondcarbon-States_Territories-data-sample-5_22-data-06_06.csv";
+    dp1.itemsColumn = "Has [XX] committed to 100% clean energy?"; // For side nav search
+    dp1.valueColumn = "Has [XX] committed to 100% clean energy?";
+    dp1.nameColumn = "Has [XX] committed to 100% clean energy?";
+
   } else if (show == "farmfresh" && state_abbreviation) {
     dp1.listTitle = "USDA Farm Produce";
     //if (location.host.indexOf('localhost') >= 0) {
@@ -1099,8 +1115,8 @@ function loadMap1(calledBy, show, dp) { // Called by index.html, map-embed.js an
     dp1.titleColumn = "marketname";
     dp1.searchFields = "marketname";
     dp1.addressColumn = "street";
-    dp1.latColumn = "y";
-    dp1.lonColumn = "x";
+    //dp1.latColumn = "latitude";
+    //dp1.lonColumn = "longitude";
     dp1.stateColumn = "state";
 
     dp1.addlisting = "https://www.ams.usda.gov/services/local-regional/food-directories-update";
@@ -1111,11 +1127,11 @@ function loadMap1(calledBy, show, dp) { // Called by index.html, map-embed.js an
     dp1.listTitle = "Coding Brigades";
     dp1.dataset = "https://neighborhood.org/brigade-information/organizations.json";
     dp1.datatype = "json";
-    dp1.listInfo = "<a href='https://neighborhood.org/brigade-information/'>Source</a> and upcoming: <a href='https://neighborhood.org/brigade-project-index/get-indexed/'>Brigade Project Index</a>"
+    dp1.listInfo = "<a href='https://neighborhood.org/brigade-information/'>Source</a> - <a href='https://projects.brigade.network/'>Brigade Project List</a> and <a href='https://neighborhood.org/brigade-project-index/get-indexed/'>About Project Index</a> ";
 
     // , "In Address": "address", "In County Name": "county", "In Website URL": "website"
     dp1.search = {"In Location Name": "name"};
-
+    dp1.zoom = 4;
   } else if (show == "buses") {
     dp1.listTitle = "Bus Locations";
     dp1.dataset = "https://api.marta.io/buses";
@@ -1141,7 +1157,17 @@ function loadMap1(calledBy, show, dp) { // Called by index.html, map-embed.js an
     dp1.nameColumn = "name_botanical";
     // , "In Address": "address", "In County Name": "county", "In Website URL": "website"
     dp1.search = {"Common Name": "family_common_name", "Family Name": "family_name_botanical", "Botanical Name": "name_botanical"};
-
+  } else if (show == "solar") {
+        // Currently showing for all states even though only Georgia solar list in Google Sheet.
+        dp1.listTitle = "Solar Companies";
+        dp1.editLink = "https://docs.google.com/spreadsheets/d/1yt_saLpiBNPR1g_r2mn9-U5DozqLoVJHVwfR-4f0HTU/edit?usp=sharing";
+        dp1.googleDocID = "1yt_saLpiBNPR1g_r2mn9-U5DozqLoVJHVwfR-4f0HTU";
+        dp1.sheetName = "Companies";
+        dp1.listInfo = "<br><br>Post comments in our <a href='https://docs.google.com/spreadsheets/d/1yt_saLpiBNPR1g_r2mn9-U5DozqLoVJHVwfR-4f0HTU/edit?usp=sharing'>Google Sheet</a> to submit map updates.<br>View Georgia's <a href='https://www.solarpowerworldonline.com/2020-top-georgia-contractors/'>top solar contractors by KW installed</a>.";
+        dp1.valueColumn = "firm type";
+        dp1.valueColumnLabel = "Firm Type";
+        dp1.markerType = "google";
+        dp1.search = {"In Location Name": "name", "In Address": "address", "In County Name": "county", "In Website URL": "website"};      
   } else if (theState == "GA") {
 
       if (show == "opendata") {
@@ -1211,16 +1237,6 @@ function loadMap1(calledBy, show, dp) { // Called by index.html, map-embed.js an
         dp1.valueColumnLabel = "EV Industry";
         dp1.markerType = "google";
         dp1.search = {"EV Industry": "ev industry", "In Location Name": "name", "In Address": "address", "In County Name": "county", "In Website URL": "website"};
-      } else if (show == "solar") {
-        dp1.listTitle = "Solar Companies";
-        dp1.editLink = "https://docs.google.com/spreadsheets/d/1yt_saLpiBNPR1g_r2mn9-U5DozqLoVJHVwfR-4f0HTU/edit?usp=sharing";
-        dp1.googleDocID = "1yt_saLpiBNPR1g_r2mn9-U5DozqLoVJHVwfR-4f0HTU";
-        dp1.sheetName = "Companies";
-        dp1.listInfo = "<br><br>Post comments in our <a href='https://docs.google.com/spreadsheets/d/1yt_saLpiBNPR1g_r2mn9-U5DozqLoVJHVwfR-4f0HTU/edit?usp=sharing'>Google Sheet</a> to submit map updates.<br>View Georgia's <a href='https://www.solarpowerworldonline.com/2020-top-georgia-contractors/'>top solar contractors by KW installed</a>.";
-        dp1.valueColumn = "firm type";
-        dp1.valueColumnLabel = "Firm Type";
-        dp1.markerType = "google";
-        dp1.search = {"In Location Name": "name", "In Address": "address", "In County Name": "county", "In Website URL": "website"};
       } else if (show == "vax" || show == "vac") { // Phase out vac
         dp1.listTitle = "Vaccine Locations";
         //dp1.dataset = "https://docs.google.com/spreadsheets/d/1odIH33Y71QGplQhjJpkYhZCfN5gYCA6zXALTctSavwE/gviz/tq?tqx=out:csv&sheet=Sheet1"; // MapBox sample
@@ -1432,7 +1448,7 @@ function initialHighlight(hash) {
 
     // https://stackoverflow.com/questions/2346011/how-do-i-scroll-to-an-element-within-an-overflowed-div?noredirect=1&lq=1
 
-    var element = document.getElementById("detaillist");
+    //var element = document.getElementById("detaillist");
     //element.scrollTop = element.scrollHeight;
     //$("#detaillist").scrollTop(200);
 
@@ -2483,6 +2499,10 @@ function elementScrolled(elem) { // scrolled into view
   return ((elemTop <= docViewBottom) && (elemTop >= docViewTop));
 }
 function bottomReached(elem) { // bottom scrolled into view
+  if(!$(elem).length) {
+    console.log("Element for bottomReached does not exist: " + elem);
+    return 0;
+  }
   var docViewTop = $(window).scrollTop();
   var docViewBottom = docViewTop + $(window).height();
   var hangover = 10; // Extend into the next section, so map remains visible.
@@ -2493,6 +2513,10 @@ function bottomReached(elem) { // bottom scrolled into view
   return (elemBottom < 0);
 }
 function topReached(elem) { // top scrolled out view
+  if(!$(elem).length) {
+    //console.log("Element for topReached does not exist: " + elem);
+    return 0;
+  }
   var docViewTop = $(window).scrollTop();
   //var docViewBottom = docViewTop + $(window).height();
   var pretop = 80; // Extend into the next section, so map remains visible.
@@ -2519,7 +2543,7 @@ var mapFixed = false;
 var previousScrollTop = $(window).scrollTop();
 $(window).scroll(function() {
   if (revealHeader == false) {
-    $('.headerbar').hide(); $('.showMenuSmNav').show(); $('#logoholderbar').show(); $('#logoholderside').show();
+    $("#headerFixed").addClass("headerShort"); $('.headerbar').hide(); $('.showMenuSmNav').show(); $('#logoholderbar').show(); $('#logoholderside').show();
     $('#filterFieldsHolder').hide();
     $('.headerOffset').hide();
     if (!$("#filterFieldsHolder").is(':visible')) { // Retain search filters space at top, unless they are already hidden
@@ -2529,7 +2553,7 @@ $(window).scroll(function() {
     revealHeader = true; // For next manual scroll
   } else if ($(window).scrollTop() > previousScrollTop) { // Scrolling Up
     if ($(window).scrollTop() > previousScrollTop + 20) { // Scrolling Up fast
-      $('.headerbar').hide(); $('.showMenuSmNav').show(); $('#logoholderbar').show(); $('#logoholderside').show();
+      $("#headerFixed").addClass("headerShort"); $('.headerbar').hide(); $('.showMenuSmNav').show(); $('#logoholderbar').show(); $('#logoholderside').show();
       //$('#filterFieldsHolder').hide();
       $('.headerOffset').hide();
       if (!$("#filterFieldsHolder").is(':visible')) { // Retain search filters space at top, unless they are already hidden
@@ -2538,14 +2562,14 @@ $(window).scroll(function() {
     }
   } else { // Scrolling Down
     if ($(window).scrollTop() < (previousScrollTop - 20)) { // Reveal if scrolling down fast
-      $('.headerbar').show(); $('.showMenuSmNav').hide(); $('#logoholderbar').hide(); $('#logoholderside').hide();
+      $("#headerFixed").removeClass("headerShort"); $('.headerbar').show(); $('.showMenuSmNav').hide(); $('#logoholderbar').hide(); $('#logoholderside').hide();
       //$('#filterFieldsHolder').show();
       if ($("#headerbar").length) {
         $('.headerOffset').show();
       }
       $('#headerFixed').show();
     } else if ($(window).scrollTop() == 0) { // At top
-      $('.headerbar').show(); $('.showMenuSmNav').hide(); $('#logoholderbar').hide(); $('#logoholderside').hide();
+      $("#headerFixed").removeClass("headerShort"); $('.headerbar').show(); $('.showMenuSmNav').hide(); $('#logoholderbar').hide(); $('#logoholderside').hide();
       //$('#filterFieldsHolder').show();
       if ($("#headerbar").length) {
         $('.headerOffset').show();
@@ -2599,6 +2623,6 @@ function calculateDistance(lat1, lon1, lat2, lon2, unit) {
   return dist
 }
 $(window).resize(function() {
-  $(".headerOffset2").height($("#filterFieldsHolder").height() + "px");
+  $(".filterbarOffset").height($("#filterFieldsHolder").height() + "px");
 });
 console.log('end of localsite/js/map.js');

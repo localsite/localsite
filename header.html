@@ -94,7 +94,8 @@ Could use these state shapes: https://github.com/coryetzkorn/state-svg-defs
 		
 		<hr>
 		<a href="../community/challenge/"><b>Web Challenge</b></a>
-		<a href="../community/">Project Areas</a>
+		<a href="../community/">Get Involved</a>
+		<a href="../community/projects/">Project Areas</a>
 		<a href="../localsite/info/">Local Industries</a>
 		<a href="../community/start/">Starter Samples</a>
 		<!--
@@ -140,12 +141,6 @@ Could use these state shapes: https://github.com/coryetzkorn/state-svg-defs
 		      </div>
 	    </div>
 
-		<!--
-		<div class="showApps local" style="display:none; float:left;">
-			<i class="material-icons" style="font-size:30px; color:#ccc; padding:5px 4px 4px 0px">&#xE5C3;</i>
-		</div>
-		-->
-
 		<div class="showMenu" style="float:left;font-size:24px; color:#999;">
 			<img src="../localsite/img/icon/hamburger.png" style="width:30px; opacity:0.5">
 			<!--
@@ -179,8 +174,7 @@ Could use these state shapes: https://github.com/coryetzkorn/state-svg-defs
 	</div>
 
 </div>
-<!-- Also update headerbar and headerOffset -->
-<div id="headeroffset" class="headerbarheight" style="height:100px;"></div>
+<div id="headeroffset" style="height:100px;"></div>
 
 <script>
 $(document).ready(function () {
@@ -203,11 +197,11 @@ $(document).ready(function () {
 		console.log("showSearchClick")
 		if ($("#filterFieldsHolder").is(':visible')) {
 			$("#filterFieldsHolder").hide();
-			$(".headerOffset2").hide();
+			$(".filterbarOffset").hide();
 			//$("#pageLinksHolder").hide();
 		} else {
 			$("#filterFieldsHolder").show();
-			$(".headerOffset2").show();
+			$(".filterbarOffset").show();
 			$(".hideWhenPop").show();
 		}
 	    return;
