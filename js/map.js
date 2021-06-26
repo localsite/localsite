@@ -99,10 +99,12 @@ function hashChangedMap() {
     hiddenhash.state = "GA";
   }
 
-
-  if (hash.show !== priorHashMap.show) {
+  if (hash.layers !== priorHashMap.layers) {
     //applyIO(hiddenhash.naics);
-    loadMap1("hashChanged() in map-filters.js", hash.show);
+    loadMap1("hashChangedMap() in map.js layers", hash.show);
+  } else if (hash.show !== priorHashMap.show) {
+    //applyIO(hiddenhash.naics);
+    loadMap1("hashChangedMap() in map.js", hash.show);
   } else if (hash.state && hash.state !== priorHashMap.state) {
     // Why are new map points not appearing
     loadMap1("hashChanged() in map.js new state " + hash.state, hash.show);
@@ -265,7 +267,7 @@ function loadFromSheet(whichmap,whichmap2,dp,basemaps1,basemaps2,attempts,callba
       })
     } else if (dp.googleDocID) {
       // 
-      loadScript(localsite_app.modelearth_data_root() + '/localsite/map/neighborhood/js/tabletop.js', function(results) {
+      loadScript(local_app.modelearth_root() + '/localsite/map/neighborhood/js/tabletop.js', function(results) {
 
         tabletop = Tabletop.init( { key: dp.googleDocID, // from constants.js
           callback: function(data, tabletop) { 
@@ -943,7 +945,6 @@ function markerRadius(radiusValue,map) {
   return radiusOut;
 }
 
-
 // MAP 1
 // var map1 = {};
 var showprevious = param["show"];
@@ -953,15 +954,15 @@ var tabletop; // Allows us to wait for tabletop to load.
 function loadMap1(calledBy, show, dp) { // Called by index.html, map-embed.js and map-filters.js
 
   console.log('loadMap1 calledBy ' + calledBy + ' show: ' + show);
-  if (!show) {
+  if (!show && param["show"]) {
     show = param["show"];
   }
-
-  let hash = getHash();
+  
+  let hash = getHash(); // Includes hiddenhash
+  let layers = hash.layers;
 
   $("#dataList").html("");
-  $("#detaillist").html("<img src='" + localsite_app.localsite_root() + "img/icon/loading.gif' style='margin:40px; width:120px' alt='Loading'>");
-  // 
+  $("#detaillist").html("<img src='" + local_app.localsite_root() + "img/icon/loading.gif' style='margin:40px; width:120px' alt='Loading'>");
 
   //if (!show && param["go"]) {
   //  show = param["go"].toLowerCase();
@@ -1040,9 +1041,9 @@ function loadMap1(calledBy, show, dp) { // Called by index.html, map-embed.js an
     this.getContainer()._leaflet_map = this;
   });
 
-  let community_root = localsite_app.community_data_root();
+  let community_root = local_app.community_data_root();
   //let state_root = "/georgia-data/";
-  //let state_root = localsite_app.custom_data_root();
+  //let state_root = local_app.custom_data_root();
   let state_abbreviation = hash.state || "GA";
 
   let dp1 = {}
@@ -1102,7 +1103,7 @@ function loadMap1(calledBy, show, dp) { // Called by index.html, map-embed.js an
     //} else {
     //  // Older data
     //  dp1.valueColumn = "Prepared";
-    //  dp1.dataset = localsite_app.custom_data_root()  + "farmfresh/farmersmarkets-" + state_abbreviation + ".csv";
+    //  dp1.dataset = local_app.custom_data_root()  + "farmfresh/farmersmarkets-" + state_abbreviation + ".csv";
     //}
     dp1.name = "Local Farms"; // To remove
     dp1.dataTitle = "Farm Fresh Produce";
@@ -1123,15 +1124,6 @@ function loadMap1(calledBy, show, dp) { // Called by index.html, map-embed.js an
     // community/farmfresh/ 
     dp1.listInfo = "Farmers markets and local farms providing fresh produce directly to consumers. <a style='white-space: nowrap' href='https://model.earth/community/farmfresh/ga/'>About Data</a> | <a href='https://www.ams.usda.gov/local-food-directories/farmersmarkets'>Update Listings</a>";
   
-  } else if (show == "brigades") {
-    dp1.listTitle = "Coding Brigades";
-    dp1.dataset = "https://neighborhood.org/brigade-information/organizations.json";
-    dp1.datatype = "json";
-    dp1.listInfo = "<a href='https://neighborhood.org/brigade-information/'>Source</a> - <a href='https://projects.brigade.network/'>Brigade Project List</a> and <a href='https://neighborhood.org/brigade-project-index/get-indexed/'>About Project Index</a> ";
-
-    // , "In Address": "address", "In County Name": "county", "In Website URL": "website"
-    dp1.search = {"In Location Name": "name"};
-    dp1.zoom = 4;
   } else if (show == "buses") {
     dp1.listTitle = "Bus Locations";
     dp1.dataset = "https://api.marta.io/buses";
@@ -1168,6 +1160,15 @@ function loadMap1(calledBy, show, dp) { // Called by index.html, map-embed.js an
         dp1.valueColumnLabel = "Firm Type";
         dp1.markerType = "google";
         dp1.search = {"In Location Name": "name", "In Address": "address", "In County Name": "county", "In Website URL": "website"};      
+  } else if (layers == "brigades") { // To do: Check an array of layers
+        dp1.listTitle = "Coding Brigades";
+        dp1.dataset = "https://neighborhood.org/brigade-information/organizations.json";
+        dp1.datatype = "json";
+        dp1.listInfo = "<a href='https://neighborhood.org/brigade-information/'>Source</a> - <a href='https://projects.brigade.network/'>Brigade Project List</a> and <a href='https://neighborhood.org/brigade-project-index/get-indexed/'>About Project Index</a> ";
+
+        // , "In Address": "address", "In County Name": "county", "In Website URL": "website"
+        dp1.search = {"In Location Name": "name"};
+        dp1.zoom = 4;
   } else if (theState == "GA") {
 
       if (show == "opendata") {
@@ -1185,7 +1186,7 @@ function loadMap1(calledBy, show, dp) { // Called by index.html, map-embed.js an
       } else if (show == "360") {
         dp1.listTitle = "Birdseye Views";
         //  https://model.earth/community-data/us/state/GA/VirtualTourSites.csv
-        dp1.dataset =  localsite_app.custom_data_root() + "360/GeorgiaPowerSites.csv";
+        dp1.dataset =  local_app.custom_data_root() + "360/GeorgiaPowerSites.csv";
 
       } else if (show == "recycling" || show == "transfer" || show == "recyclers" || show == "inert" || show == "landfills") { // recycling-processors
         if (!param.state || param.state == "GA") {
@@ -1259,9 +1260,9 @@ function loadMap1(calledBy, show, dp) { // Called by index.html, map-embed.js an
         //dp1.listSubtitle = "Smart & Sustainable Movement of Goods & Services";
         dp1.industryListTitle = "Mobility Tech";
 
-        console.log("map.js loading " + localsite_app.custom_data_root() + "communities/map-georgia-smart.csv");
+        console.log("map.js loading " + local_app.custom_data_root() + "communities/map-georgia-smart.csv");
 
-        dp1.dataset =  localsite_app.custom_data_root() + "communities/map-georgia-smart.csv";
+        dp1.dataset =  local_app.custom_data_root() + "communities/map-georgia-smart.csv";
         dp1.listInfo = "Includes Georgia Smart Community Projects";
         dp1.search = {"In Title": "title", "In Description": "description", "In Website URL": "website", "In Address": "address", "In City Name": "city", "In Zip Code" : "zip"};
         dp1.markerType = "google";
@@ -1530,7 +1531,7 @@ function loadGeos(geo, attempts, callback) {
 
     //Load in contents of CSV file
     if (theState) {
-      d3.csv(localsite_app.community_data_root() + "us/state/" + theState + "/" + theState + "counties.csv").then(function(myData,error) {
+      d3.csv(local_app.community_data_root() + "us/state/" + theState + "/" + theState + "counties.csv").then(function(myData,error) {
         if (error) {
           //alert("error")
           console.log("Error loading file. " + error);

@@ -43,7 +43,7 @@ $(document).ready(function(){
  	}
  	$("body").addClass("flexbody"); // For footer to stick at bottom on short pages
  	$("body").wrapInner( "<main class='flexmain' style='position:relative'></main>"); // To stick footer to bottom
- 	$("body").prepend( "<div id='header' class='flexheader hideprint'></div>\r" );
+ 	$("body").prepend( "<div id='header' class='flexheader hideprint' style='pointer-events:none'></div>\r" );
 		
 
  	if (param["showheader"] && param["showheader"] != "true") {
@@ -80,9 +80,13 @@ $(document).ready(function(){
 			 		// Move filterbarOffset and filterEmbedHolder immediately after body tag start.
 			 		// Allows map embed to reside below intro text and additional navigation on page.
 			 		$("#filterEmbedHolder").insertAfter("#headeroffset");
-			 		//$(".filterbarOffset").insertAfter("#headeroffset");
-			 		$(".filterbarOffset").insertAfter("#headerFixed");
+			 		////$(".filterbarOffset").insertAfter("#headeroffset");
 			 		
+			 		//$(".filterbarOffset").insertAfter("#headerFixed");
+			 		$(".filterbarOffset").insertAfter("#headeroffset");
+			 		//$(".filterbarOffset").insertAfter("#header");
+			 		//$('body').prepend($(".filterbarOffset"));
+
 			 		//$(".filterbarOffset").hide();
 
 			 		// Make paths relative to current page
@@ -116,12 +120,12 @@ $(document).ready(function(){
 				 		//changeFavicon("https://lh3.googleusercontent.com/HPVBBuNWulVbWxHAT3Nk_kIhJPFpFObwNt4gU2ZtT4m89tqjLheeRst_cMnO8mSrVt7FOSlWXCdg6MGcGV6kwSyjBVxk5-efdw")
 				 	// localhost will be removed from the following. Currently allows Georgia branding during testing.
 				 	// location.host.indexOf('localhost') >= 0 || 
-				 	} else if (location.host.indexOf('localhost') >= 0 || param.startTitle == "Georgia.org" || location.host.indexOf("georgia") >= 0) {
+				 	} else if (param.startTitle == "Georgia.org" || location.host.indexOf("georgia") >= 0) {
 				 		$(".siteTitleShort").text("Model Georgia");
 				 		param.titleArray = [];
 				 		//param.headerLogo = "<a href='https://georgia.org'><img src='" + modelpath + "../community/img/logo/georgia_usa_gray.png' style='width:130px;padding-top:4px'></a>";
-				 		param.headerLogo = "<a href='https://georgia.org'><img src='" + localsite_app.localsite_root() + "img/logo/states/GA.png' style='width:130px;padding-top:4px'></a>";
-				 		param.headerLogoNoText = "<a href='https://georgia.org'><img src='" + localsite_app.localsite_root() + "img/logo/states/GA-notext.png' style='width:40px;padding-top:0px;margin-top:-4px'></a>";
+				 		param.headerLogo = "<a href='https://georgia.org'><img src='" + local_app.localsite_root() + "img/logo/states/GA.png' style='width:130px;padding-top:4px'></a>";
+				 		param.headerLogoNoText = "<a href='https://georgia.org'><img src='" + local_app.localsite_root() + "img/logo/states/GA-notext.png' style='width:40px;padding-top:0px;margin-top:-4px'></a>";
 				 		if (document.title) {
 					 		document.title = "Georgia.org - " + document.title;
 					 	} else {
@@ -146,10 +150,8 @@ $(document).ready(function(){
 				 	} else if (!Array.isArray(param.titleArray)) {
 				 		$(".siteTitleShort").text("Model Earth");
 				 		param.titleArray = ["model","earth"]
-			  			//param.headerLogo = "<img src='/community/img/logo/favicon.png' style='width:26px;opacity:0.9;margin-right:0.8px'>"
 			  			param.headerLogo = "<img src='/community/img/logo/model-earth.png' style='width:34px; margin-right:2px'>";
 			  			document.title = "Model Earth - " + document.title
-			  			//changeFavicon(modelpath + "../community/img/logo/favicon.png")
 			  			changeFavicon(modelpath + "../community/img/logo/model-earth.png")
 			  			$('.earth').css('display', 'inline'); 
 				 		console.log(".earth display")
@@ -328,8 +330,9 @@ $(document).ready(function(){
 		
 	});
  	// SIDE NAV WITH HIGHLIGHT ON SCROLL
-	if (param["sidecolumn"]) {
-		$("#sidecolumn").load( modelpath + "../community/nav.html", function( response, status, xhr ) {
+ 	if (param["sidecolumn"]) {
+		let targetColumn = "#sidecolumn";
+		$(targetColumn).load( modelpath + "../community/nav.html", function( response, status, xhr ) {
 
 			// Make paths relative to current page
 	 		$("#sidecolumn a[href]").each(function() {
