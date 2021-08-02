@@ -811,7 +811,7 @@ function keyFound(this_key, cat_filter, params) {
     }
 }
 
-// Top rows of for a specific set of fips (states and counties)
+// Top rows for a specific set of fips (states and counties)
 function topRatesInFips(dataSet, dataNames, fips, params) {
     let catcount = params.catcount || 40;
     let gotext = "";
@@ -842,7 +842,6 @@ function topRatesInFips(dataSet, dataNames, fips, params) {
                 }else{
                     if(params.catmethod==0){
                         which=params.catsort+'_reported'
-                        //console.log("jjjjjjjjjjjjjjjjj"+which)
                     }else if(params.catmethod==2){
                         which=params.catsort+'_est3'
                         estimed='estimate_est3'
@@ -1121,6 +1120,7 @@ function topRatesInFips(dataSet, dataNames, fips, params) {
 
                 if (stateAbbr) {
                 //alert("stateAbbr2: " + stateAbbr);
+                //BUGBUG - Contains all the counties in the US
                 d3.csv(local_app.community_data_root() + "us/id_lists/county_id_list.csv").then( function(consdata) {
                     d3.csv(local_app.community_data_root() + "us/state/" + stateAbbr + "/" + stateAbbr + "counties.csv").then( function(latdata) {
                          // TABLE HEADER ROW

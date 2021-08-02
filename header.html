@@ -2,6 +2,9 @@
 /*
 Could use these state shapes: https://github.com/coryetzkorn/state-svg-defs
 */
+#local-header {
+	min-height: auto !important; /* Removed min-height 56px set for map-filters bar. */
+}
 </style>
 
 <div id="menuHolder" style="pointer-events: auto; background:#333; display:none">
@@ -197,11 +200,13 @@ $(document).ready(function () {
 		console.log("showSearchClick")
 		if ($("#filterFieldsHolder").is(':visible')) {
 			$("#filterFieldsHolder").hide();
-			$(".filterbarOffset").hide();
+			//$(".filterbarOffset").hide();
+			$("#filterbaroffset").hide();
 			//$("#pageLinksHolder").hide();
 		} else {
 			$("#filterFieldsHolder").show();
-			$(".filterbarOffset").show();
+			//$(".filterbarOffset").show();
+			$("#filterbaroffset").show();
 			$(".hideWhenPop").show();
 		}
 	    return;

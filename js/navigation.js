@@ -45,9 +45,14 @@ $(document).ready(function(){
  	}
  	$("body").addClass("flexbody"); // For footer to stick at bottom on short pages
  	$("body").wrapInner( "<main class='flexmain' style='position:relative'></main>"); // To stick footer to bottom
- 	$("body").prepend( "<div id='header' class='flexheader hideprint' style='pointer-events:none'></div>\r" );
+ 	// min-height allows header to serve as #filterbaroffset when header.html not loaded
+ 	$("body").prepend( "<div id='local-header' class='flexheader hideprint' style='pointer-events:none;min-height:56px'></div>\r");
 		
 
+ 	if (param["showapps"] && param["showapps"] == "false") {
+ 		$(".showApps").hide();
+		$("#appSelectHolder").hide();
+ 	}
  	if (param["showheader"] && param["showheader"] != "true") {
 
 		//$(".filterPanel").addClass("filterPanel_fixed"); // This cause everything but top nav to disappear.
@@ -55,6 +60,11 @@ $(document).ready(function(){
 		$(".headerOffset").hide();
 		$("#headeroffset").hide();
 		$(".headerOffset").hide();
+
+		// Insert for map filters since header.html file is not loaded.
+		//alert("123")
+		//$("body").prepend( "<div id='filterbaroffset' style='height:56px; pointer-events:none'></div>");
+
 	// TO DO: Add support for custom headerpath
 
  	} else {
@@ -77,7 +87,7 @@ $(document).ready(function(){
 		if (param.header) headerFile = param.header;
 		
 		$(document).ready(function () {
-			 $("#header").load(headerFile, function( response, status, xhr ) {
+			 $("#local-header").load(headerFile, function( response, status, xhr ) {
 
 			 		// Move filterbarOffset and filterEmbedHolder immediately after body tag start.
 			 		// Allows map embed to reside below intro text and additional navigation on page.
@@ -85,19 +95,22 @@ $(document).ready(function(){
 			 		////$(".filterbarOffset").insertAfter("#headeroffset");
 			 		
 			 		//$(".filterbarOffset").insertAfter("#headerFixed");
-			 		$(".filterbarOffset").insertAfter("#headeroffset");
+
+			 		// Not needed since moved into header.html
+			 		//$(".filterbarOffset").insertAfter("#headeroffset");
+
 			 		//$(".filterbarOffset").insertAfter("#header");
 			 		//$('body').prepend($(".filterbarOffset"));
 
 			 		//$(".filterbarOffset").hide();
 
 			 		// Make paths relative to current page
-			 		$("#header a[href]").each(function() {
+			 		$("#local-header a[href]").each(function() {
 			 			if($(this).attr("href").toLowerCase().indexOf("http") < 0) {
 				      		$(this).attr("href", modelpath + $(this).attr('href'));
 				  		}
 				    })
-				    $("#header img[src]").each(function() {
+				    $("#local-header img[src]").each(function() {
 			 		  if($(this).attr("src").toLowerCase().indexOf("http") < 0) {
 			 		  	if($(this).attr("src").indexOf("/") != 0) { // Don't append if starts with /
 				      		$(this).attr("src", modelpath + $(this).attr('src')); // Was climbpath
@@ -122,7 +135,10 @@ $(document).ready(function(){
 				 		//changeFavicon("https://lh3.googleusercontent.com/HPVBBuNWulVbWxHAT3Nk_kIhJPFpFObwNt4gU2ZtT4m89tqjLheeRst_cMnO8mSrVt7FOSlWXCdg6MGcGV6kwSyjBVxk5-efdw")
 				 	// localhost will be removed from the following. Currently allows Georgia branding during testing.
 				 	// location.host.indexOf('localhost') >= 0 || 
-				 	} else if (param.startTitle == "Georgia.org" || location.host.indexOf("georgia") >= 0) {
+				 	} else if (param.startTitle == "Georgia.org" || location.host.indexOf("georgia.org") >= 0
+				 		// Show locally for Brave Browser only
+				 		|| ((location.host.indexOf('localhost') >= 0 && navigator && navigator.brave) || false)
+				 		) {
 				 		$(".siteTitleShort").text("Model Georgia");
 				 		param.titleArray = [];
 				 		//param.headerLogo = "<a href='https://georgia.org'><img src='" + modelpath + "../community/img/logo/georgia_usa_gray.png' style='width:130px;padding-top:4px'></a>";
@@ -139,9 +155,10 @@ $(document).ready(function(){
 				 		if (location.host.indexOf('localhost') < 0) {
 				 			//$(".locationTab").hide(); // So we can test locally
 				 		}
-				 		if (location.host.indexOf('georgia.org') >= 0) {
+				 		//if (location.host.indexOf('georgia.org') >= 0) {
 				 			$('.georgiaorg-hide').css('display', 'none');
-				 		}
+				 			$('#headerOffset').css('display', 'block'); // Show under site's Drupal header
+				 		//}
 				 	} else if (!Array.isArray(param.titleArray) && (param.startTitle == "Neighborhood.org" || location.host.indexOf('neighborhood.org') >= 0)) {
 				 		$(".siteTitleShort").text("Neighborhood Modeling");
 				 		param.titleArray = ["neighbor","hood"]
@@ -264,8 +281,24 @@ $(document).ready(function(){
 				
 				// END WAS LIMITED TO HEADER
 				$(".headerOffset").show();
+				$("#local-header").append( "<div id='filterbaroffset' style='display:none;height:56px; pointer-events:none'></div>");
+				if ($("#filterFieldsHolder").length) {
+					//$("#filterbaroffset").css('display','block');
+				}
+
+				// SLight delay
+				setTimeout( function() {
+					if ($("#filterFieldsHolder").length) {
+						$("#filterbaroffset").css('display','block');
+					}
+				}, 200);
+				setTimeout( function() {
+					if ($("#filterFieldsHolder").length) {
+						$("#filterbaroffset").css('display','block');
+					}
+				}, 1000);
+
 			}); // End $("#header").load
-			
 		}); 
 
 	}
@@ -282,55 +315,53 @@ $(document).ready(function(){
 	*/
 
 	if(document.getElementById("footer") == null) {
-		$("body").append( "<div id='footer' class='flexfooter noprint'></div>\r" );
+		$("body").append( "<div id='local-footer' class='flexfooter noprint'></div>\r" );
 	} else {
 		//$("#footer").addClass("flexfooter");
+		$("#footer").prepend( "<div id='local-footer' class='flexfooter noprint'></div>\r" );
 	}
-	var footerClimbpath = "";
-	let footerFile = modelpath + "../localsite/footer.html"; // modelpath remains relative for site desgnated above as having a local copy of io and community.
-	if (param.footer) {
-		footerFile = param.footer; // Custom
+	if (param["showfooter"] && param["showfooter"] == "false") {
+	} else {
+		var footerClimbpath = "";
+		let footerFile = modelpath + "../localsite/footer.html"; // modelpath remains relative for site desgnated above as having a local copy of io and community.
+		if (param.footer) {
+			footerFile = param.footer; // Custom
 
-		var footerFilePath = location.pathname + footerFile;
-		if (footerFile.indexOf("/") > 0) {
-			footerFilePath = footerFilePath.substr(0, footerFilePath.lastIndexOf("/") + 1); // Remove file name
+			var footerFilePath = location.pathname + footerFile;
+			if (footerFile.indexOf("/") > 0) {
+				footerFilePath = footerFilePath.substr(0, footerFilePath.lastIndexOf("/") + 1); // Remove file name
+			}
+
+			console.log("footerFilePath " + footerFilePath);
+
+			var upLevelInstance = (footerFilePath.match(/\.\.\//g) || []).length; // count of ../ in path.
+
+			var climbLevels = ""
+			for (var i = 0; i < upLevelInstance; i++) { // Remove ../ for each found
+				climbLevels = climbLevels + "../";
+			}	 	
+		 	footerClimbpath = climbLevels; // Example: ../
+		 	console.log("footerClimbpath (Levels up to current page): " + footerClimbpath);
+		 	//alert(footerClimbpath)
+		} else {
+			footerClimbpath = climbpath;
 		}
 
-		console.log("footerFilePath " + footerFilePath);
+		$("#local-footer").load(footerFile, function( response, status, xhr ) {
+			console.log("footerFile: " + footerFile);
+			let pageFolder = getPageFolder(footerFile);
+			//alert("footerClimbpath: " + footerClimbpath);
+			//alert("pageFolder: " + pageFolder);
 
-		var upLevelInstance = (footerFilePath.match(/\.\.\//g) || []).length; // count of ../ in path.
+			//var pathToFooter = 
 
-		var climbLevels = ""
-		for (var i = 0; i < upLevelInstance; i++) { // Remove ../ for each found
-			climbLevels = climbLevels + "../";
-		}	 	
-	 	footerClimbpath = climbLevels; // Example: ../
-	 	console.log("footerClimbpath (Levels up to current page): " + footerClimbpath);
-	 	//alert(footerClimbpath)
-	} else {
-		footerClimbpath = climbpath;
+			// Append footerClimbpath to relative paths
+			makeLinksRelative("local-footer", footerClimbpath, pageFolder);
+			//makeLinksRelative("footer",footerClimbpath,footerFilePath); // Not working on second level pages.
+
+		});
 	}
 
-	if (location.host.indexOf('familytrees') >= 0) {
-		//footerClimbpath = "../"; // TEMP FIX
-	}
-	$("#footer").load(footerFile, function( response, status, xhr ) {
-		console.log("footerFile: " + footerFile);
-		let pageFolder = getPageFolder(footerFile);
-		//alert("footerClimbpath: " + footerClimbpath);
-		//alert("pageFolder: " + pageFolder);
-
-		//var pathToFooter = 
-
-		// Append footerClimbpath to relative paths
-		makeLinksRelative("footer", footerClimbpath, pageFolder);
-		//makeLinksRelative("footer",footerClimbpath,footerFilePath); // Not working on second level pages.
-
-	});
-
-	$(document).ready(function () {
-		
-	});
  	// SIDE NAV WITH HIGHLIGHT ON SCROLL
  	if (param["sidecolumn"]) {
 		let targetColumn = "#sidecolumn";
