@@ -155,11 +155,11 @@ function loadParams(paramStr,hashStr) {
   //let myScript = null;
 
   // This will be removed
-  for (var i = 0; i < scripts.length; ++i) {
-      if(scripts[i].src && scripts[i].src.indexOf('embed-map.js') !== -1){
-        myScript = scripts[i];
-      }
-  }
+  //for (var i = 0; i < scripts.length; ++i) {
+  //    if(scripts[i].src && scripts[i].src.indexOf('embed-map.js') !== -1){
+  //      myScript = scripts[i];
+  //    }
+  //}
 
   for (var i = 0; i < scripts.length; ++i) {
       if(scripts[i].src && scripts[i].src.indexOf('localsite.js') !== -1){
@@ -168,11 +168,11 @@ function loadParams(paramStr,hashStr) {
   }
 
   // Now try to find one containging embed-map - to be removed
-  for (var i = 0; i < scripts.length; ++i) {
-      if(scripts[i].src && scripts[i].src.indexOf('map-embed.js') !== -1){
-        myScript = scripts[i];
-      }
-  }
+  //for (var i = 0; i < scripts.length; ++i) {
+  //    if(scripts[i].src && scripts[i].src.indexOf('map-embed.js') !== -1){
+  //      myScript = scripts[i];
+  //    }
+  //}
   //alert(myScript.src);
 
   let params = {};
@@ -525,7 +525,7 @@ loadScript(theroot + 'js/jquery.min.js', function(results) {
           $('body').append("<div id='bodyFile'></div>");
         }
         console.log("param.display " + param.display)
-        if (param.display == "everything" || param.display == "map") {
+        if (param.display == "everything" || param.display == "navigation2" || param.display == "map") {
           let bodyFile = theroot + "map/index.html #insertedText";
 
           //console.log("Before template Loaded: " + bodyFile);
@@ -575,7 +575,8 @@ loadScript(theroot + 'js/jquery.min.js', function(results) {
       if (param["show"] == "suppliers" || param["show"] == "smart") {
         console.log("Custom for suppliers and smart");
         if (location.host == 'georgia.org' || location.host == 'www.georgia.org') {
-          strVarCss += ".headerOffsetOne {height:75px; display:block !important}.headerOffset {height:75px !important;}"; 
+          // display:block !important // Caused space above fixed header in Drupal. Prevented movement to top during scrolling.
+          strVarCss += ".headerOffsetOne {height:75px;}.headerOffset {height:75px !important;}"; 
         }
         strVarCss += "h1 {font-size:38px;margin-top:20px}"; // Larger header for Drupal
         //strVarCss += ".headerOffsetOne{display:none !important}";
@@ -655,7 +656,7 @@ loadScript(theroot + 'js/jquery.min.js', function(results) {
 
   </script>
   */
-  if (param.display == "everything" || param.display == "map") {
+  if (param.display == "everything" || param.display == "navigation" || param.display == "map") {
 
     includeCSS3(theroot + 'css/map.css',theroot); // Before naics.js so #industries can be overwritten.
     includeCSS3(theroot + 'css/naics.css',theroot);

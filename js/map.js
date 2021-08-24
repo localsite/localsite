@@ -180,20 +180,33 @@ function loadFromSheet(whichmap,whichmap2,dp,basemaps1,basemaps2,attempts,callba
     
     // TRY AGAIN UNTIL #[whichmap] is available.
     //if (typeof document.querySelector('#' + whichmap)._leaflet_map === 'undefined') {
-    if (typeof document.querySelector('#' + whichmap) === 'undefined') {
-      console.log("Cannot read property '_leaflet_map' of null for #" + whichmap + ".  Attempt " + attempts);
+    if (typeof document.querySelector('#' + whichmap) === 'undefined' || typeof document.querySelector('#' + whichmap) === 'null') {
+      console.log("#" + whichmap + " is undefined. Try again.  Attempt " + attempts);
       if (attempts <= 100) {
         setTimeout( function() {
           loadFromSheet(whichmap,whichmap2,dp,basemaps1,basemaps2,attempts+1,callback);
         }, 20 );
       } else {
-        console.log("ERROR - exceeded 100 attempts");
+        console.log("ERROR #" + whichmap + " - exceeded 100 attempts.");
       }
       return;
     } else {
       console.log("typeof document.querySelector: " + typeof document.querySelector('#' + whichmap));
       console.log("The following 3 are also undefined when working properly...");
-      console.log("typeof document.querySelector ._leaflet_map: " + typeof document.querySelector('#' + whichmap)._leaflet_map);
+      if (typeof document.querySelector('#' + whichmap)._leaflet_map === 'null') {
+        console.log("DELETE THIS - should no longer be reached now that we check for null 14 lines above.");
+        console.log("Property '_leaflet_map' is null for #" + whichmap + ".  Try again. Attempt " + attempts);
+        if (attempts <= 100) {
+          setTimeout( function() {
+            loadFromSheet(whichmap,whichmap2,dp,basemaps1,basemaps2,attempts+1,callback);
+          }, 20 );
+        } else {
+          console.log("ERROR - _leaflet_map null exceeded 100 attempts.");
+        }
+        return;
+      } else {
+        console.log("typeof document.querySelector ._leaflet_map: " + typeof document.querySelector('#' + whichmap)._leaflet_map);
+      }
     }
 
     let map = document.querySelector('#' + whichmap)._leaflet_map; // Recall existing map
@@ -298,7 +311,7 @@ function loadFromSheet(whichmap,whichmap2,dp,basemaps1,basemaps2,attempts,callba
           callback: function(data, tabletop) { 
 
             //onTabletopLoad(dp1) 
-            dataMixedCase = tabletop.sheets(dp.sheetName).elements; // dp.data is called points in MapsForUs.js
+            dataMixedCase = tabletop.sheets(dp.sheetName).elements; // dp.data is called "points" in MapsForUs.js
             //dp.data_lowercase_key;
 
             // Currently assumes dp.data is blank - later we may need to append.
@@ -1190,9 +1203,10 @@ function loadMap1(calledBy, show, dp) { // Called by index.html, map-embed.js an
         dp1.dataset = "https://neighborhood.org/brigade-information/organizations.json";
         dp1.datatype = "json";
         dp1.listInfo = "<a href='https://neighborhood.org/brigade-information/'>Source</a> - <a href='https://projects.brigade.network/'>Brigade Project List</a> and <a href='https://neighborhood.org/brigade-project-index/get-indexed/'>About Project Index</a> ";
-
+        dp1.markerType = "google"; // BUGBUG doesn't seem to work with county boundary background (showShapeMap)
         // , "In Address": "address", "In County Name": "county", "In Website URL": "website"
         dp1.search = {"In Location Name": "name"};
+
         dp1.zoom = 4;
   } else if (theState == "GA") {
 
@@ -1329,10 +1343,11 @@ function loadMap1(calledBy, show, dp) { // Called by index.html, map-embed.js an
         dp1.listTitle = "Georgia COVID-19 Response"; // Appears at top of list
         //dp1.listTitle = "Georgia PPE Suppliers"; // How do we set the layer title for checkbox?
         //dp1.editLink = "";
-        dp1.googleDocID = "1bqMTVgaMpHIFQBNdiyMe3ZeMMr_lp9qTgzjdouRJTKI";
+        //dp1.googleDocID = "1bqMTVgaMpHIFQBNdiyMe3ZeMMr_lp9qTgzjdouRJTKI"; // Producing 404's
         dp1.sheetName = "GA Suppliers List";
-        dp1.listInfo = "Select a category to the left to filter results. View&nbsp;<a href='https://map.georgia.org/display/products/suppliers-pdf/ga_suppliers_list_2021-03-10.pdf' target='_parent'>PDF&nbsp;version</a>&nbsp;of&nbsp;the&nbsp;complete&nbsp;list.";
-        
+        dp1.listInfo = "Select a category to the left to filter results. View&nbsp;<a href='https://map.georgia.org/display/products/suppliers/us_ga_suppliers_ppe_2021_08_09.csv' target='_parent'>PDF&nbsp;version</a>&nbsp;of&nbsp;the&nbsp;complete&nbsp;list.";
+        dp1.dataset = "https://map.georgia.org/display/products/suppliers/us_ga_suppliers_ppe_2021_08_09.csv";
+
         //dp1.dataTitle = "Manufacturers and Distributors";
         dp1.dataTitle = "PPE Suppliers";
         dp1.itemsColumn = "items";
@@ -2574,6 +2589,10 @@ $(window).scroll(function() {
     $("#headerFixed").addClass("headerShort"); $('.headerbar').hide(); $('.headerOffset').hide(); $('.showMenuSmNav').show(); $('#logoholderbar').show(); $('#logoholderside').show();
     $('#filterFieldsHolder').hide();
     $('.headerOffset').hide();
+
+    $('#sidecolumnContent').css("top","54px");
+    $('#showSide').css("top","7px");
+
     if (!$("#filterFieldsHolder").is(':visible')) { // Retain search filters space at top, unless they are already hidden
       $('#headerFixed').hide();
     }
@@ -2584,6 +2603,9 @@ $(window).scroll(function() {
       $("#headerFixed").addClass("headerShort"); $('.headerbar').hide(); $('.headerOffset').hide(); $('.showMenuSmNav').show(); $('#logoholderbar').show(); $('#logoholderside').show();
       //$('#filterFieldsHolder').hide();
       $('.headerOffset').hide();
+      //alert("4")
+      $('#sidecolumnContent').css("top","54px");
+      $('#showSide').css("top","7px");
       if (!$("#filterFieldsHolder").is(':visible')) { // Retain search filters space at top, unless they are already hidden
         $('#headerFixed').hide();
       }
@@ -2594,6 +2616,8 @@ $(window).scroll(function() {
       //$('#filterFieldsHolder').show();
       if ($("#headerbar").length) {
         $('.headerOffset').show();
+        $('#sidecolumnContent').css("top","150px");
+        $('#showSide').css("top","108px");
       }
       $('#headerFixed').show();
     } else if ($(window).scrollTop() == 0) { // At top
@@ -2601,6 +2625,8 @@ $(window).scroll(function() {
       //$('#filterFieldsHolder').show();
       if ($("#headerbar").length) {
         $('.headerOffset').show();
+        $('#sidecolumnContent').css("top","150px");
+        $('#showSide').css("top","108px");
       }
       $('#headerFixed').show();
     }

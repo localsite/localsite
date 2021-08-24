@@ -69,6 +69,7 @@ function populateFieldsFromHash() {
 $(".showSearch").css("display","inline-block");
 $(".showSearch").removeClass("local");
 
+catArray = [];
 $(document).ready(function () {
 
 	if (param.state) {
@@ -79,7 +80,7 @@ $(document).ready(function () {
 	if (! ('webkitSpeechRecognition' in window) ) {
 		$(".si-btn").hide();
 	}
-	catArray = [];
+	
 	if(location.host.indexOf('localhost') >= 0) {
 		console.log("Loaded Harmonized System (HS) codes");
 	}
@@ -1676,7 +1677,7 @@ function initSiteObject(layerName) {
 	          				$("#appSelectHolder .select-menu-arrow-holder .material-icons:first-of-type").hide();
 	          				$("#appSelectHolder .select-menu-arrow-holder .material-icons:nth-of-type(2)").show();
 
-	          				$("#showAppsText").text("Now Showing");
+	          				$("#showAppsText").text("Goods & Services");
 	          				$("#appSelectHolder .showApps").addClass("filterClickActive");
 							showThumbMenu(hash.show, siteObject);
                             $("#headerbar").hide();
@@ -2041,12 +2042,15 @@ function hashChanged() {
 	      pagemap.flyTo(mapCenter, zoom);
 	    }
         */
-	    let pagemap2 = document.querySelector('#map2')._leaflet_map; // Recall existing map
-	    let pagemap_container2 = L.DomUtil.get(pagemap2);
-	    if (pagemap_container2 != null) {
-	      // TODO: Reactiveate
-	      pagemap2.flyTo(mapCenter);
-	    }
+        if (typeof document.querySelector('#map2') === 'undefined' || typeof document.querySelector('#map2') === 'null') {
+            console.log("#map2 undefined");
+        } else {
+    	    let pagemap2 = document.querySelector('#map2')._leaflet_map; // Recall existing map
+    	    let pagemap_container2 = L.DomUtil.get(pagemap2);
+    	    if (pagemap_container2 != null) {
+    	      pagemap2.flyTo(mapCenter);
+    	    }
+        }
 	}
 	if (hash.state != priorHash.state) {
 		if($("#geomap").is(':visible')){

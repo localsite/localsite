@@ -39,16 +39,29 @@ $(document).ready(function(){
 	}
  	$("body").wrapInner( "<div id='fullcolumn'></div>"); // Creates space for sidecolumn
  	if(document.getElementById("sidecolumn") == null) {
- 		$("body").prepend( "<div id='sidecolumn' class='hideprint'></div>\r" );
+ 		$("body").prepend( "<div id='sidecolumn' class='hideprint' style='display:none'></div>\r" );
  	} else {
+ 		// TODO - change to fixed when side reaches top of page
+ 		console.log("navigation.js report: sidecolumn already exists")
  		$("#sidecolumn").addClass("sidecolumn-inpage");
  	}
+ 	$("body").prepend( "<div id='sidecolumn-closed' class='hideprint' style='position:relative'><div id='showSide' class='showSide'><img src='/localsite/img/icon/sidemenu.png' style='width:15px'></div></div>\r" );
+ 	
  	$("body").addClass("flexbody"); // For footer to stick at bottom on short pages
  	$("body").wrapInner( "<main class='flexmain' style='position:relative'></main>"); // To stick footer to bottom
  	// min-height allows header to serve as #filterbaroffset when header.html not loaded
  	$("body").prepend( "<div id='local-header' class='flexheader hideprint' style='pointer-events:none;min-height:56px'></div>\r");
 		
-
+ 	$(document).on("click", "#showSide", function(event) {
+		$("#showSide").hide();
+		$("#sidecolumn").show();
+		let headerFixedHeight = $("#headerFixed").height();
+		$('#sidecolumnContent').css("top",headerFixedHeight + "px");
+	});
+ 	$(document).on("click", ".hideSide", function(event) {
+		$("#sidecolumn").hide();
+		$("#showSide").show();
+	});
  	if (param["showapps"] && param["showapps"] == "false") {
  		$(".showApps").hide();
 		$("#appSelectHolder").hide();
@@ -91,6 +104,8 @@ $(document).ready(function(){
 
 			 		// Move filterbarOffset and filterEmbedHolder immediately after body tag start.
 			 		// Allows map embed to reside below intro text and additional navigation on page.
+
+			 		$(".showMenu").show();
 			 		$("#filterEmbedHolder").insertAfter("#headeroffset");
 			 		////$(".filterbarOffset").insertAfter("#headeroffset");
 			 		
@@ -123,7 +138,7 @@ $(document).ready(function(){
 			 		// To do: fetch the existing background-image.
 			 		if (param.startTitle == "Code for America" ||  location.host.indexOf('codeforamerica') >= 0) {
 			  			param.titleArray = []
-			  			param.headerLogo = "<img src='/localsite/img/logo/partners/codeforamerica.png' style='width:110px;margin:10px 10px 10px 0;'>";
+			  			param.headerLogo = "<img src='/localsite/img/logo/partners/code-for-america.png' style='width:110px;margin:10px 10px 10px 0;'>";
 				 		document.title = "Code for America - " + document.title
 				 		// BUGBUG - error in console
 				 		//changeFavicon("https://lh3.googleusercontent.com/HPVBBuNWulVbWxHAT3Nk_kIhJPFpFObwNt4gU2ZtT4m89tqjLheeRst_cMnO8mSrVt7FOSlWXCdg6MGcGV6kwSyjBVxk5-efdw")
@@ -363,9 +378,13 @@ $(document).ready(function(){
 	}
 
  	// SIDE NAV WITH HIGHLIGHT ON SCROLL
- 	if (param["sidecolumn"]) {
+ 	if (1==2 && param["sidecolumn"]) {
+ 		// No longer used
 		let targetColumn = "#sidecolumn";
 		$(targetColumn).load( modelpath + "../community/nav.html", function( response, status, xhr ) {
+
+			//return;
+			//alert("test");
 
 			// Make paths relative to current page
 	 		$("#sidecolumn a[href]").each(function() {
