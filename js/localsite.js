@@ -522,10 +522,10 @@ loadScript(theroot + 'js/jquery.min.js', function(results) {
         if ($("#" + param.insertafter).length) {
           $("#" + param.insertafter).append("<div id='bodyFile'></div>");
         } else if (!$("#bodyFile").length) {
-          $('body').append("<div id='bodyFile'></div>");
+          $('body').prepend("<div id='bodyFile'></div>");
         }
         console.log("param.display " + param.display)
-        if (param.display == "everything" || param.display == "navigation2" || param.display == "map") {
+        if (param.display == "everything" || param.display == "locfilters" || param.display == "map") {
           let bodyFile = theroot + "map/index.html #insertedText";
 
           //console.log("Before template Loaded: " + bodyFile);
@@ -548,7 +548,7 @@ loadScript(theroot + 'js/jquery.min.js', function(results) {
           $('body').append("<div id='infoFile'></div>");
         }
         if (param.display == "everything") {
-          let infoFile = theroot + "info/info-template.html #info-template";
+          let infoFile = theroot + "info/info-template.html #info-template"; // Including #info-template limits to div within page, prevents other includes in page from being loaded.
           //console.log("Before template Loaded infoFile: " + infoFile);
           //alert("Before template Loaded: " + bodyFile);
           $("#infoFile").load(infoFile, function( response, status, xhr ) {
@@ -656,7 +656,7 @@ loadScript(theroot + 'js/jquery.min.js', function(results) {
 
   </script>
   */
-  if (param.display == "everything" || param.display == "navigation" || param.display == "map") {
+  if (param.display == "everything" || param.display == "locfilters" || param.display == "navigation" || param.display == "map") {
 
     includeCSS3(theroot + 'css/map.css',theroot); // Before naics.js so #industries can be overwritten.
     includeCSS3(theroot + 'css/naics.css',theroot);
@@ -666,10 +666,9 @@ loadScript(theroot + 'js/jquery.min.js', function(results) {
           includeCSS3(theroot + 'css/leaflet.css',theroot);
           loadScript(theroot + 'js/leaflet.js', function(results) {
             loadScript(theroot + 'js/leaflet.icon-material.js', function(results) { // Could skip when map does not use material icon colors
-              $(".show-on-load").show();
               loadScript(theroot + 'js/map.js', function(results) {
                 // Loads map-filters.js
-                loadSearchFilters3(theroot,1); // Uses local_app library in localsite.js for community_data_root
+                loadMapFiltersJS(theroot,1); // Uses local_app library in localsite.js for community_data_root
               });
             });
           });
@@ -693,11 +692,9 @@ loadScript(theroot + 'js/jquery.min.js', function(results) {
         });
       });
     }
-      
 
     includeCSS3(theroot + '../io/build/widgets.css',theroot);
     includeCSS3(theroot + '../io/build/slider.css',theroot);
-
 
     includeCSS3(theroot + 'css/base.css',theroot);
     includeCSS3(theroot + 'css/search-filters.css',theroot);
@@ -706,7 +703,31 @@ loadScript(theroot + 'js/jquery.min.js', function(results) {
     }
     
 
-    includeCSS3('https://fonts.googleapis.com/icon?family=Material+Icons',theroot);
+    //includeCSS3('https://fonts.googleapis.com/icon?family=Material+Icons',theroot);
+    !function() {
+      // Setting up listener for font checking
+      var font = "1rem 'Material Icons'";
+      document.fonts.addEventListener('loadingdone', function(event) {
+          console.log(`Checking ${font}: ${ document.fonts.check(font)}`);
+      })
+
+      // Loading font
+      var link = document.createElement('link'),
+          head = document.getElementsByTagName('head')[0];
+
+      link.addEventListener('load', function() {
+          //alert('Font loaded');
+          $(document).ready(function () {
+            $(".show-on-load").show();
+          });
+      })
+
+      link.type = 'text/css';
+      link.rel = 'stylesheet';
+      link.href = 'https://fonts.googleapis.com/icon?family=Material+Icons';
+      head.appendChild(link);
+  }()
+
     includeCSS3(theroot + 'css/leaflet.icon-material.css',theroot);
     
     loadScript(theroot + 'js/table-sort.js', function(results) {}); // For county grid column sort
@@ -879,7 +900,7 @@ function getUrlID3(url,theroot) {
   return urlID;
 }
 
-function loadSearchFilters3(theroot, count) {
+function loadMapFiltersJS(theroot, count) {
   if (typeof customD3loaded !== 'undefined' && typeof localsite_map !== 'undefined') {
     //alert("localsite_map " + localsite_map)
     //loadScript(theroot + 'https://cdn.jsdelivr.net/npm/vue', function(results) { // Need to check if function loaded
@@ -887,11 +908,11 @@ function loadSearchFilters3(theroot, count) {
     //});
   } else if (count<100) { // Wait a milisecond and try again
     setTimeout( function() {
-        consoleLog("try loadSearchFilters again")
-      loadSearchFilters(theroot,count+1);
+      consoleLog("try loadMapFiltersJS again")
+      loadMapFiltersJS(theroot,count+1);
       }, 10 );
   } else {
-    consoleLog("ERROR: loadSearchFilters exceeded 100 attempts.");
+    consoleLog("ERROR: loadMapFiltersJS exceeded 100 attempts.");
   }
 
 } 

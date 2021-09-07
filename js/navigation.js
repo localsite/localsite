@@ -8,22 +8,24 @@ if (window.location.protocol != 'https:' && location.host.indexOf('localhost') <
 }
 var imageUrl;
 
+// Get the levels below root
+var foldercount = (location.pathname.split('/').length - 1); // - (location.pathname[location.pathname.length - 1] == '/' ? 1 : 0) // Removed because ending with slash or filename does not effect levels. Increased -1 to -2.
+foldercount = foldercount - 2;
+var climbcount = foldercount;
+if(location.host.indexOf('localhost') >= 0) {
+	//climbcount = foldercount - 0;
+}
+var climbpath = "";
+for (var i = 0; i < climbcount; i++) {
+	climbpath += "../";
+}
+if (climbpath == "") {
+	climbpath += "./"; // Eliminates ? portion of URL
+}
+//console.log("climbpath " + climbpath);
+
 $(document).ready(function(){
-	// Get the levels below root
- 	var foldercount = (location.pathname.split('/').length - 1); // - (location.pathname[location.pathname.length - 1] == '/' ? 1 : 0) // Removed because ending with slash or filename does not effect levels. Increased -1 to -2.
- 	foldercount = foldercount - 2;
- 	var climbcount = foldercount;
- 	if(location.host.indexOf('localhost') >= 0) {
- 		//climbcount = foldercount - 0;
- 	}
- 	var climbpath = "";
- 	for (var i = 0; i < climbcount; i++) {
- 		climbpath += "../";
- 	}
- 	if (climbpath == "") {
- 		climbpath += "./"; // Eliminates ? portion of URL
- 	}
- 	//console.log("climbpath " + climbpath);
+	
 
  	var modelpath = climbpath;
  	if(location.host.indexOf('localhost') < 0 && location.host.indexOf('model.') < 0 && location.host.indexOf('hood') < 0) { // When not localhost or other sites that have a fork of io and community.
@@ -45,7 +47,6 @@ $(document).ready(function(){
  		console.log("navigation.js report: sidecolumn already exists")
  		$("#sidecolumn").addClass("sidecolumn-inpage");
  	}
- 	$("body").prepend( "<div id='sidecolumn-closed' class='hideprint' style='position:relative'><div id='showSide' class='showSide'><img src='/localsite/img/icon/sidemenu.png' style='width:15px'></div></div>\r" );
  	
  	$("body").addClass("flexbody"); // For footer to stick at bottom on short pages
  	$("body").wrapInner( "<main class='flexmain' style='position:relative'></main>"); // To stick footer to bottom
@@ -53,12 +54,20 @@ $(document).ready(function(){
  	$("body").prepend( "<div id='local-header' class='flexheader hideprint' style='pointer-events:none;min-height:56px'></div>\r");
 		
  	$(document).on("click", "#showSide", function(event) {
-		$("#showSide").hide();
-		$("#sidecolumn").show();
-		let headerFixedHeight = $("#headerFixed").height();
-		$('#sidecolumnContent').css("top",headerFixedHeight + "px");
+		//$("#showSide").hide();
+		if ($("#sidecolumn").is(':visible')) {
+			$("#showSide").css("opacity","1");
+			$("#sidecolumn").hide();
+			$("#showSide").show();
+		} else {
+			$("#showSide").css("opacity",".4");
+			$("#sidecolumn").show();
+			let headerFixedHeight = $("#headerFixed").height();
+			$('#sidecolumnContent').css("top",headerFixedHeight + "px");
+		}
 	});
  	$(document).on("click", ".hideSide", function(event) {
+ 		$("#showSide").css("opacity","1");
 		$("#sidecolumn").hide();
 		$("#showSide").show();
 	});
@@ -81,7 +90,7 @@ $(document).ready(function(){
 	// TO DO: Add support for custom headerpath
 
  	} else {
-
+ 		let showLeftIcon = false;
  		$(".headerOffset").show();
 		$("#headeroffset").show();
 		$(".headerOffset").show();
@@ -100,7 +109,7 @@ $(document).ready(function(){
 		if (param.header) headerFile = param.header;
 		
 		$(document).ready(function () {
-			 $("#local-header").load(headerFile, function( response, status, xhr ) {
+			$("#local-header").load(headerFile, function( response, status, xhr ) {
 
 			 		// Move filterbarOffset and filterEmbedHolder immediately after body tag start.
 			 		// Allows map embed to reside below intro text and additional navigation on page.
@@ -120,10 +129,14 @@ $(document).ready(function(){
 			 		//$(".filterbarOffset").hide();
 
 			 		// Make paths relative to current page
+			 		// Only updates right side navigation, so not currently necessary to check if starts with / but doing so anyway.
 			 		$("#local-header a[href]").each(function() {
-			 			if($(this).attr("href").toLowerCase().indexOf("http") < 0) {
+			 		  if($(this).attr("href").toLowerCase().indexOf("http") < 0) {
+			 		  	if($(this).attr("href").indexOf("/") != 0) { // Don't append if starts with /
+			 		  		//alert($(this).attr('href'))
 				      		$(this).attr("href", modelpath + $(this).attr('href'));
-				  		}
+				        }
+				  	  }
 				    })
 				    $("#local-header img[src]").each(function() {
 			 		  if($(this).attr("src").toLowerCase().indexOf("http") < 0) {
@@ -137,12 +150,14 @@ $(document).ready(function(){
 
 			 		// To do: fetch the existing background-image.
 			 		if (param.startTitle == "Code for America" ||  location.host.indexOf('codeforamerica') >= 0) {
+			 			showLeftIcon = true;
 			  			param.titleArray = []
 			  			param.headerLogo = "<img src='/localsite/img/logo/partners/code-for-america.png' style='width:110px;margin:10px 10px 10px 0;'>";
 				 		document.title = "Code for America - " + document.title
 				 		// BUGBUG - error in console
 				 		//changeFavicon("https://lh3.googleusercontent.com/HPVBBuNWulVbWxHAT3Nk_kIhJPFpFObwNt4gU2ZtT4m89tqjLheeRst_cMnO8mSrVt7FOSlWXCdg6MGcGV6kwSyjBVxk5-efdw")
 				 	} else if (param.startTitle == "Code for Atlanta" ||  location.host.indexOf('atlanta') >= 0) {
+			  			showLeftIcon = true;
 			  			param.titleArray = []
 			  			param.headerLogo = "<img src='https://scienceatl.org/wp-content/uploads/2020/04/code.png' style='width:150px;'>";
 				 		document.title = "Code for Atlanta - " + document.title
@@ -151,9 +166,9 @@ $(document).ready(function(){
 				 	// localhost will be removed from the following. Currently allows Georgia branding during testing.
 				 	// location.host.indexOf('localhost') >= 0 || 
 				 	} else if (param.startTitle == "Georgia.org" || location.host.indexOf("georgia.org") >= 0
-				 		// Show locally for Brave Browser only
-				 		|| ((location.host.indexOf('localhost') >= 0 && navigator && navigator.brave) || false)
-				 		) {
+				 	// Show locally for Brave Browser only
+				 	|| ((location.host.indexOf('localhost') >= 0 && navigator && navigator.brave) || false)	) {
+				 		showLeftIcon = true;
 				 		$(".siteTitleShort").text("Model Georgia");
 				 		param.titleArray = [];
 				 		//param.headerLogo = "<a href='https://georgia.org'><img src='" + modelpath + "../community/img/logo/georgia_usa_gray.png' style='width:130px;padding-top:4px'></a>";
@@ -175,6 +190,7 @@ $(document).ready(function(){
 				 			$('#headerOffset').css('display', 'block'); // Show under site's Drupal header
 				 		//}
 				 	} else if (!Array.isArray(param.titleArray) && (param.startTitle == "Neighborhood.org" || location.host.indexOf('neighborhood.org') >= 0)) {
+				 		showLeftIcon = true;
 				 		$(".siteTitleShort").text("Neighborhood Modeling");
 				 		param.titleArray = ["neighbor","hood"]
 			  			param.headerLogo = "<img src='/localsite/img/logo/partners/neighborhood-icon.png' style='width:40px;opacity:0.7'>"
@@ -182,6 +198,7 @@ $(document).ready(function(){
 			  			changeFavicon("/localsite/img/logo/partners/neighborhood-icon.png")
 			  			$('.neighborhood').css('display', 'inline');
 				 	} else if (!Array.isArray(param.titleArray)) {
+				 		showLeftIcon = true;
 				 		$(".siteTitleShort").text("Model Earth");
 				 		param.titleArray = ["model","earth"]
 			  			param.headerLogo = "<img src='/community/img/logo/model-earth.png' style='width:34px; margin-right:2px'>";
@@ -270,9 +287,8 @@ $(document).ready(function(){
 						//$("#itemMenu").appendTo($(this).parent().parent());
 						event.stopPropagation();
 					});
-
-					$(".hideAdvanced").click(function(event) {
-					//$(document).on("click", ".hideAdvanced", function(event) {
+					$(document).on("click", ".hideAdvanced", function(event) {
+						updateHash({"view":""});
 						$(".fieldSelector").hide();
 						$("#filterLocations").hide();
 						$("#filterClickLocation").removeClass("filterClickActive");
@@ -301,7 +317,7 @@ $(document).ready(function(){
 					//$("#filterbaroffset").css('display','block');
 				}
 
-				// SLight delay
+				// Slight delay
 				setTimeout( function() {
 					if ($("#filterFieldsHolder").length) {
 						$("#filterbaroffset").css('display','block');
@@ -313,8 +329,18 @@ $(document).ready(function(){
 					}
 				}, 1000);
 
+
+				activateSideColumn();
+
 			}); // End $("#header").load
 		}); 
+
+		if (location.host.indexOf('localhost') >= 0) {
+			showLeftIcon = true;
+		}
+		if (showLeftIcon) {
+			$("body").prepend( "<div id='sidecolumn-closed' class='hideprint' style='position:relative'><div id='showSide' class='showSide' style='top:108px'><img src='/localsite/img/icon/sidemenu.png' style='width:15px'></div></div>\r" );
+ 		}
 
 	}
 
@@ -378,22 +404,37 @@ $(document).ready(function(){
 	}
 
  	// SIDE NAV WITH HIGHLIGHT ON SCROLL
+
+ 	// Not currently using nav.html, will likely use later for overrides.  Primary side nav resides in header.
  	if (1==2 && param["sidecolumn"]) {
- 		// No longer used
+ 		// Wait for header to load?
+
 		let targetColumn = "#sidecolumn";
-		$(targetColumn).load( modelpath + "../community/nav.html", function( response, status, xhr ) {
+		$(targetColumn).load( modelpath + "../localsite/nav.html", function( response, status, xhr ) {
+
+			activateSideColumn();
+		});
+	}
+	// END SIDE NAV WITH HIGHLIGHT ON SCROLL
+});
+
+
+function activateSideColumn() {
 
 			//return;
-			//alert("test");
 
 			// Make paths relative to current page
 	 		$("#sidecolumn a[href]").each(function() {
-	 			if($(this).attr("href").toLowerCase().indexOf("http") < 0){
-		      		$(this).attr("href", climbpath + $(this).attr('href'));
+	 			if($(this).attr("href").toLowerCase().indexOf("http") < 0) {
+	 				if($(this).attr("href").indexOf("/") != 0) { // Don't append if starts with /
+	 					$(this).attr("href", climbpath + $(this).attr('href'));
+		      		}
 		  		}
 		    })
 	 		$("#sidecolumn img[src]").each(function() {
-		      $(this).attr("src", climbpath + $(this).attr('src'));
+	 			if($(this).attr("src").indexOf("/") != 0) { // Don't append if starts with /
+		      		$(this).attr("src", climbpath + $(this).attr('src'));
+		  		}
 		    })
 			
 			// Clone after path change
@@ -543,10 +584,8 @@ $(document).ready(function(){
 			    	//menuItems.filter("[href*='interns/']").addClass("active");
 				}
 			}
-		});
-	}
-	// END SIDE NAV WITH HIGHLIGHT ON SCROLL
-});
+}
+
 
 function makeLinksRelative(divID,climbpath,pageFolder) {
 	  $("#" + divID + " a[href]").each(function() {
