@@ -54,13 +54,6 @@ function populateFieldsFromHash() {
 		}
 	}
 	*/
-	if (param["counties"]) {
-		let counties = param["counties"].split(",");
-		for(var i = 0 ; i < counties.length ; i++) {
-			// Not yet implemented
-			$("#county-" + counties[i]).prop('checked', true);
-		}
-	}
 	$("#productCodes").val(param["hs"]);
 	if (param["region"]) {
 		if (hash.show) {
@@ -227,12 +220,12 @@ $(document).ready(function () {
 
     $("#filterClickLocation").click(function(event) {
     	//let hash = getHash();
-    	//if (!hash.view) {
+    	//if (!hash.mapview) {
     	//	// These will trigger call to filterClickLocation() and map display.
     	//	if (hash.state) {
-	    //		goHash({'view':'state'});
+	    //		goHash({'mapview':'state'});
 	    //	} else {
-	    //		goHash({'view':'country'});
+	    //		goHash({'mapview':'country'});
 	    //	}
     	//} else {
     		filterClickLocation();
@@ -276,7 +269,7 @@ $(document).ready(function () {
 	    	goHash({'state':this.value,'name':'','regiontitle':''}); // triggers renderMapShapes("geomap", hash); // County select map
 	    	//$("#filterLocations").hide(); // So state appears on map immediately
 	    } else { // US selected
-	    	goHash({'view':'country'});
+	    	goHash({'mapview':'country'});
 	    	//clearHash("state")
 	    	//$("#geoPicker").hide();
 	    	//$("#industryListHolder").hide();
@@ -589,7 +582,7 @@ function productList(startRange, endRange, text) {
     //});
 }
 
-function filterClickLocation() {
+function filterClickLocation(loadGeoTable) {
 	console.log("show location filters");
 
 	$("#searchLocation").focus(); // Not working
@@ -618,22 +611,46 @@ function filterClickLocation() {
         if (location.host == 'georgia.org' || location.host == 'www.georgia.org') { 
             $("#header.nav-up").hide();
         }
-        updateHash({"view":""});
+        updateHash({"mapview":""});
 	} else { // OPEN MAP FILTER
 		//alert("Open map filter")
 		let hash = getHash();
-		if (hash.view == "country") {
+		if (hash.mapview == "country") {
 			$("#geoPicker").show(); // Required for map to load
-		} else if (!hash.view) {
-			updateHash({"view":"state"});
+		} else if (!hash.mapview) {
+			let currentStates = [];
+			if(hash.geo && !hash.state) {
+				let geos = hash.geo.split(",");
+				for(var i = 0 ; i < geos.length ; i++) {
+					currentStates.push(getKeyByValue(us_stateIDs, Number(geos[i].replace("US","").substring(0,2))));
+				}
+			}
+			if (currentStates.length > 0) {
+				goHash({"mapview":"state","state":currentStates[0]});
+			} else {
+				goHash({"mapview":"state"});
+			}
 		}
 		$(".locationTabText").text("Locations");
 		$("#topPanel").hide();
-		locationFilterChange("counties");
+		
         $("#showLocations").show();
 		$("#hideLocations").hide();
-		//$(".locationTabText").text("Location");
-		$("#filterLocations").show();
+		$("#filterLocations").show(); // Than we need to load the state.
+		locationFilterChange("counties");
+
+		if (hash.geo) {
+			let clearall = false;
+	        if (hash.regiontitle != priorHash.regiontitle || hash.state != priorHash.state) {
+	        	clearall = true;
+	        }
+	        if (hash.mapview != "country") {
+	        	if (loadGeoTable != false) { // Prevents loading twice on init
+	        		//alert("updateSelectedTableRows 1")
+					updateSelectedTableRows(hash.geo, clearall, 0);
+				}
+			}
+		}
 		$("#filterClickLocation").addClass("filterClickActive");
 		
 		//renderMapShapes("geomap", hash, 1);// Called once map div is visible for tiles.
@@ -702,6 +719,16 @@ function locationFilterChange(selectedValue,selectedGeo) {
     } else {
     	if (hash.state || hash.geo) {
     		$("#geoPicker").show();
+    		// Avoid here because called below - caused checkboxes to be unchecked.
+    		//showCounties(0);
+
+    		if($("#geomap").is(':visible')) {
+    			if($("#geomap").html().length < 20) {
+    				//alert("render2")
+    				// Avoid here because called below
+					//renderMapShapes("geomap", hash, 1); // County select map
+				}
+			}
     	}
     	$(".stateFilters").show();
     }
@@ -788,7 +815,8 @@ function locClick(which) {
 // Data as values, not objects.
 let geoCountyTable = []; // Array of arrays
 let currentRowIDs = [];
-function showCounties(attempts) {
+function showCounties(attempts) { // To avoid broken tiles, this won't be executed if the #geomap div is not visible.
+	console.log("showCounties " + attempts);
 	if (typeof d3 !== 'undefined') {
 
 		let hash = getHash();
@@ -796,10 +824,8 @@ function showCounties(attempts) {
 		if (hash.state) {
 			theState = hash.state.toUpperCase();
 		}
-		if (theState.length <= 0) {
-			// BUGBUG Hack - Need to set the state from geo value(s)
-			//theState = "GA"
-			//$("#state_select").val(theState);
+		if (theState.length > 2) {
+			theState = theState.substring(0,2);
 		}
 		if ($(".output_table > table").length) {
 			if (theState == priorHash.state || (theState == "GA" && !priorHash.state)) {
@@ -892,8 +918,8 @@ function showCounties(attempts) {
 				//console.log("myData");
 				//console.log(myData);
 					
-				console.log("geoCountyTable");
-				console.log(geoCountyTable);
+				//console.log("geoCountyTable");
+				//console.log(geoCountyTable);
 
 				showTabulatorList(0);
 
@@ -916,7 +942,7 @@ var geotable = {};
 function showTabulatorList(attempts) {
 	let hash = getHash();
 	if (typeof Tabulator !== 'undefined') {
-		console.log("showTabulatorList")
+		console.log("showTabulatorList " + attempts)
 		// Try this with 5.0. Currently prevents row click from checking box.
 		// selectable:true,
 
@@ -924,7 +950,8 @@ function showTabulatorList(attempts) {
 		// maxHeight:"100%",
 
 
-
+		// More filter samples
+		// https://stackoverflow.com/questions/2722159/how-to-filter-object-array-based-on-attributes
 		geotable = new Tabulator("#tabulator-geotable", {
 		    data:localObject.geo.filter(function(el){return el.state == hash.state.split(",")[0];}),     //load row data from array of objects
 		    layout:"fitColumns",      //fit columns to width of table
@@ -932,21 +959,19 @@ function showTabulatorList(attempts) {
 		    tooltips:true,            //show tool tips on cells
 		    addRowPos:"top",          //when adding a new row, add it to the top of the table
 		    history:true,             //allow undo and redo actions on the table
-		    pagination:"local",       //paginate the data
-		    paginationSize:7,         //allow 7 rows per page of data
 		    movableColumns:true,      //allow column order to be changed
 		    resizableRows:true,       //allow row order to be changed
 		    initialSort:[             //set the initial sort order of the data - NOT WORKING
-		        {column:"name", dir:"asc"},
+		        {column:"pop", dir:"desc"},
 		    ],
 		    maxHeight:"100%",
 		    paginationSize:10000,
 		    columns:[
 		    	{formatter:"rowSelection", titleFormatter:"rowSelection", hozAlign:"center", headerHozAlign:"center", width:10, headerSort:false},
 		        {title:"County", field:"name"},
-		        {title:"Population", field:"pop"},
-		        {title:"Sq Miles", field:"sqmiles"},
-		        {title:"Per Mile", field:"permile"},
+		        {title:"Population", field:"pop", hozAlign:"right", headerSortStartingDir:"desc", formatter:"money", formatterParams:{precision:false}},
+		        {title:"Sq Miles", field:"sqmiles", hozAlign:"right"},
+		        {title:"Per Mile", field:"permile", hozAlign:"right"},
 		    ],
 
 		    rowClick:function(e, row){
@@ -1041,10 +1066,11 @@ function updateSelectedTableRows(geo, clear, attempts) {
     	if (clear) {
     		geotable.deselectRow(); // All
     	}
-		$.each(geo.split(','), function(index, value) {
-			geotable.selectRow(geotable.getRows().filter(row => row.getData().id == value));
-		});
-
+    	if (geo) {
+			$.each(geo.split(','), function(index, value) {
+				geotable.selectRow(geotable.getRows().filter(row => row.getData().id == value));
+			});
+		}
 		// Row Display Test - scroll down to see which rows were not initially in DOM.
     	//$('.tabulator-row input:checkbox').css('display', 'none');
 
@@ -1054,11 +1080,11 @@ function updateSelectedTableRows(geo, clear, attempts) {
     		// TODO - Group by state
     		county_names.push(value._row.data.name.split(",")[0].replace(" County",""));
     	});
-    	//alert(county_names.toString());
+    	console.log("county_names " + county_names.toString());
     	$(".counties_title").text(county_names.toString().replaceAll(",",", "))
     } else {
 	  attempts = attempts + 1;
-      if (attempts < 2000) {
+      if (attempts < 200) {
       	// To do: Add a loading image after a coouple seconds. 2000 waits about 300 seconds.
         setTimeout( function() {
           updateSelectedTableRows(geo,clear,attempts);
@@ -1453,7 +1479,7 @@ $(document).ready(function () {
 	  event.stopPropagation();
 	});
 	$('.go_map').click(function(event) {
-	  goHash({'view':'country'});
+	  goHash({'mapview':'country'});
 	  window.scrollTo({
 	      top: $('#map1').offset().top,
 	      left: 0
@@ -1721,16 +1747,16 @@ function getDirectLink(livedomain,directlink,rootfolder,hashStr) {
 
 // These is missing var promises = [] and ready.
 // Let's look at Industry Mix first: http://localhost:8887/community/zip/leaflet/#columns=JobsAgriculture:50;JobsManufacturing:50
-var geojsonLayer;
+//var geojsonLayer;
 function renderMapShapesSimple(whichmap, hash) {
 	console.log("renderMapShapesSimple " + whichmap);
 	let map = document.querySelector('#' + whichmap)._leaflet_map; 
 	//alert("renderMapShapesSimple " + whichmap);
-	if (geojsonLayer) {
+	//if (geojsonLayer) {
 		//alert("found geojsonLayer")
 	  	// Problem, this removes the whole layer, shapes and all.
 		//map.removeLayer(geojsonLayer); // Remove the prior topo layer
-	}
+	//}
 }
 
 // This could be reactivated to merge another dataset to map popups
@@ -2029,7 +2055,11 @@ function hashChanged() {
 	param = mix(param,loadParams(location.search,location.hash)); // param is declared in localsite.js. Give priority to param updates within code.
 
 	let hash = getHash(); // Includes changes to hiddenhash
-
+	if (hash.show == "undefined") { // To eventually remove
+		//alert("hash.show = undefined")
+		delete hash.show; // Fix URL bug from indicator select hamburger menu
+		updateHash({'show':''}); // Remove from URL hash without invoking hashChanged event.
+	}
 	// For PPE embed, also in map.js. Will likely change
 	if (!hash.show) {
 		// For embed link
@@ -2153,21 +2183,15 @@ function hashChanged() {
 
    		// Potential BugBug - this runs after initial map load, not needed (but okay as long as zoom is not set).
    		
-   		// Copied to map.js
+   		// Similar resides in map.js for ds
    		
+   		// Used for map2
+   		/*
         if($("#state_select").find(":selected").val()) {
        		let theState = $("#state_select").find(":selected").val();
             if (theState != "") {
               let kilometers_wide = $("#state_select").find(":selected").attr("km");
-              //zoom = 1/kilometers_wide * 1800000;
-      
-              if (theState == "HI") { // Hawaii
-                  zoom = 6
-              } else if (kilometers_wide > 1000000) { // Alaska
-                  zoom = 4
-              } else {
-                  zoom = 7; // For Georgia map
-              }
+              zoom = zoomFromKm(kilometers_wide); // In map.js
               let lat = $("#state_select").find(":selected").attr("lat");
               let lon = $("#state_select").find(":selected").attr("lon");
               //alert("lat " + lat + " lon " + lon)
@@ -2177,7 +2201,7 @@ function hashChanged() {
         	console.log("ERROR #state_select not available");
         }
         console.log("Recenter map " + mapCenter)
-		
+		*/
 	}
 	if (hash.state) {
         $(".showforstates").show();
@@ -2185,33 +2209,36 @@ function hashChanged() {
     	$(".showforstates").hide();
 	}
 	
-	if (mapCenter.length > 0 && typeof L != "undefined") {
-		// Avoiding including ",5" for zoom since 7 is already set. 
-        // NOT IDEAL: This also runs during init.
-        // TODO: If reactiveating, omit on init, or pass in default zoom.
-        /*
-		console.log("Recenter map zoom " + zoom)
-	 	let pagemap = document.querySelector('#map1')._leaflet_map; // Recall existing map
-	    let pagemap_container = L.DomUtil.get(pagemap);
-	    if (pagemap_container != null) {
-	    	// Test here: http://localhost:8887/localsite/info/embed.html#state=GA
-	      pagemap.flyTo(mapCenter, zoom);
-	    }
-        */
-        if (typeof document.querySelector('#map2') === 'undefined' || typeof document.querySelector('#map2') === 'null') {
-            console.log("#map2 undefined");
-        } else {
-    	    let pagemap2 = document.querySelector('#map2')._leaflet_map; // Recall existing map
-    	    let pagemap_container2 = L.DomUtil.get(pagemap2);
-    	    // This will not be reachable on initial load.
-    	    if (pagemap_container2 != null) {
-    	      pagemap2.flyTo(mapCenter);
+	if (mapCenter.length > 0) { // Set when hash.lat changes
+		if (typeof L != "undefined") {
+			// Avoiding including ",5" for zoom since 7 is already set. 
+	        // NOT IDEAL: This also runs during init.
+	        // TODO: If reactiveating, omit on init, or pass in default zoom.
+	        /*
+			console.log("Recenter map zoom " + zoom)
+		 	let pagemap = document.querySelector('#map1')._leaflet_map; // Recall existing map
+		    let pagemap_container = L.DomUtil.get(pagemap);
+		    if (pagemap_container != null) {
+		    	// Test here: http://localhost:8887/localsite/info/embed.html#state=GA
+		      pagemap.flyTo(mapCenter, zoom);
+		    }
+	        */
+	        if (typeof document.querySelector('#map2') === 'undefined' || typeof document.querySelector('#map2') === 'null') {
+	            console.log("#map2 undefined");
+	        } else {
+	    	    let pagemap2 = document.querySelector('#map2')._leaflet_map; // Recall existing map
+	    	    let pagemap_container2 = L.DomUtil.get(pagemap2);
+	    	    // This will not be reachable on initial load.
+	    	    if (pagemap_container2 != null) {
+	    	      pagemap2.flyTo(mapCenter);
 
-    	    }
-        }
-	} else {
-		console.log("ERROR leaflet not loaded yet. typeof L undefined.");
+	    	    }
+	        }
+		} else {
+			console.log("ERROR lat changed for map2, but leaflet not loaded. typeof L undefined.");
+		}
 	}
+
 	if (hash.state != priorHash.state) {
 		loadGeomap = true;
 		if(location.host.indexOf('model.georgia') >= 0) {
@@ -2328,35 +2355,16 @@ function hashChanged() {
             $(".mainColumn1").show();
         }
 
-        //if (hash.geomap == "true") { // Since otherwise called above
-            //if (reloadedMap == false) {
-                //loadScript('/localsite/js/leaflet.js', function(results) {
-
-                        // ._leaflet_map Only works if alert occurs here
-                        //alert("reloadedMap2 " + reloadedMap)
-
-                        //alert("update map")
-                        //renderMapShapesSimple("geomap", hash);
-
-                        // Clear here so clicking a new region redraws map.
-                        // This can be avoided once we figure out how to update an individal shape using renderMapShapesSimple.
-                        //let whichmap = "geomap";
-                        //let geomap = document.querySelector('#' + whichmap)._leaflet_map; 
-                        //if (geojsonLayer) {
-                        //  geomap.removeLayer(geojsonLayer); // Remove the prior topo layer
-                        //}
-                            //renderMapShapes("geomap", hash, 1);
-                        
-                //});
-                //reloadedMap = true;
-            //}
-        //}
         let clearall = false;
         if (hash.regiontitle != priorHash.regiontitle || hash.state != priorHash.state) {
-        	clearall = true;
+        	//clearall = true;
         }
-        updateSelectedTableRows(hash.geo, clearall, 0);
-
+        if($("#geomap").is(':visible')){
+        	if (hash.mapview != "country") {
+        		//alert("updateSelectedTableRows 2"); // Might need this delay.
+        		updateSelectedTableRows(hash.geo, clearall, 0);
+        	}
+    	}
         loadGeomap = true;
     }
 
@@ -2454,14 +2462,19 @@ function hashChanged() {
             $("#impactIcons div:contains(" + capitalizeSetName + ")").addClass("active");
         }
     }
-    if (hash.view != priorHash.view) {
+    if (hash.mapview != priorHash.mapview) {
     	//alert("hash change view")
     	//$(".stateFilters").show();
     	//$("#filterLocations").show();
     	//$("#geoPicker").show();
     	//$("#geomap").show(); // To trigger map filter display below.
-    	renderMapShapes("geomap", hash, 1); // County select map
-    	loadGeomap = false;
+    	if (hash.mapview) {
+    		//alert("render1")
+    		renderMapShapes("geomap", hash, 1); // County select map
+    		loadGeomap = false;
+    	} else {
+    		$("#filterLocations").hide();
+    	}
     }
 	/*
 	// Moved back to map.js
@@ -2495,8 +2508,8 @@ $(document).ready(function () {
 		$("#region_select").val(hash.regiontitle)
 		//$("#state_select option[value='NV']").prop('selected', true);
 	}
-	if (hash.view) { // Country map
-		filterClickLocation();
+	if (hash.mapview) { // Country map
+		filterClickLocation(false);
 	}
 	hashChanged();
 	/*

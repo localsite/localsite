@@ -817,9 +817,9 @@ class="headerbarheight"
             </div>
 
             <div class="stateFilters input-output" style="float:left; display:none" class="mock-up earth">
-              <b>State</b><br>
+              <b><!--States--></b><br>
                 <select id="state_select" name="state">
-                 <option value="">Choose a state...</option>
+                 <option value="">Choose a location...</option>
 <!-- Removed 0 from 01 to 09, not sure why stateID skips 3 and 7 -->
 <option value="AL" stateid="1" lat="32.7396" lon="-86.8435" km="131174">Alabama</option>
 <option value="AK" stateid="2" lat="63.3474" lon="-152.8397" km="1478927">Alaska</option>
@@ -1050,7 +1050,7 @@ class="headerbarheight"
         <div id="geoPicker" style="display:none">
           <div style="float:left">
             <!-- Must be displayed initiallly so tiles are visible -->
-              <div id="geomap" style="width:440px; height:530px; margin:0 30px 30px 0; border:1px solid blue; position: relative">
+              <div id="geomap" style="width:702px; height:530px; margin:0 30px 30px 0; border:1px solid blue; position: relative">
               </div>
           </div>
 
@@ -1084,7 +1084,9 @@ class="headerbarheight"
                 <!-- Tabular: Latest version -->
                 
                 <div id="tabulator-geotable"></div>
-                Table by <a href="http://tabulator.info/" target="_blank">Tabulator</a><br><br>
+                <div style="margin-top:8px; font-size: 12px">
+                  Dataset displayed by <a href="../../../localsite/info/data/" target="_blank">Tabulator</a><br><br>
+                </div>
 
                 <div style="width:100%" class="output_table rotateHeader">
                 </div>

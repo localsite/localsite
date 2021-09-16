@@ -167,7 +167,8 @@ $(document).ready(function(){
 				 	// location.host.indexOf('localhost') >= 0 || 
 				 	} else if (param.startTitle == "Georgia.org" || location.host.indexOf("georgia.org") >= 0
 				 	// Show locally for Brave Browser only
-				 	|| ((location.host.indexOf('localhost') >= 0 && navigator && navigator.brave) || false)	) {
+				 	//|| ((location.host.indexOf('localhost') >= 0 && navigator && navigator.brave) || false)
+				 	) {
 				 		showLeftIcon = true;
 				 		$(".siteTitleShort").text("Model Georgia");
 				 		param.titleArray = [];
@@ -197,15 +198,20 @@ $(document).ready(function(){
 			  			document.title = "Neighborhood.org - " + document.title
 			  			changeFavicon("/localsite/img/logo/partners/neighborhood-icon.png")
 			  			$('.neighborhood').css('display', 'inline');
-				 	} else if (!Array.isArray(param.titleArray)) {
+				 	} else if (!Array.isArray(param.titleArray) && !param.headerLogo) {
 				 		showLeftIcon = true;
 				 		$(".siteTitleShort").text("Model Earth");
 				 		param.titleArray = ["model","earth"]
-			  			param.headerLogo = "<img src='/community/img/logo/model-earth.png' style='width:34px; margin-right:2px'>";
+			  			param.headerLogoSmall = "<img src='/community/img/logo/model-earth.png' style='width:34px; margin-right:2px'>";
 			  			document.title = "Model Earth - " + document.title
 			  			changeFavicon(modelpath + "../community/img/logo/model-earth.png")
 			  			$('.earth').css('display', 'inline'); 
 				 		console.log(".earth display")
+				 	}
+
+				 	if (location.host.indexOf('model.earth') >= 0) { // Since above is not detecting model.earth
+				 		console.log("model.earth found")
+				 		showLeftIcon = true;
 				 	}
 
 				 	if (param["show"] == "mockup") {
@@ -221,7 +227,7 @@ $(document).ready(function(){
 				 		// Since deactivated above due to conflict with header logo in app.
 				 		$('.neighborhood').css('display', 'block');
 				 	}
-				 	if (param.titleArray) {
+				 	if (param.titleArray && !param.headerLogo) {
 				 		if (param.titleArray[1] == undefined) {
 				 			$('#headerSiteTitle').html("");
 				 		} else {
@@ -254,7 +260,9 @@ $(document).ready(function(){
 				 		$('.logoholder-modelearth').css('margin-right', '20px');
 				 	}
 				 	*/
-				 	if (param.headerLogo) {
+				 	if (param.headerLogoSmall) {
+				 		$('#headerLogo').html("<a href='" + climbpath + "' style='text-decoration:none'>" + param.headerLogoSmall + "</a>");
+				 	} else if (param.headerLogo) {
 				 		$('#headerLogo').html("<a href='" + climbpath + "' style='text-decoration:none'>" + param.headerLogo + "</a>");
 				 	} else {
 					 	$('#headerLogo').css('background-image', 'url(' + imageUrl + ')');
@@ -288,7 +296,7 @@ $(document).ready(function(){
 						event.stopPropagation();
 					});
 					$(document).on("click", ".hideAdvanced", function(event) {
-						updateHash({"view":""});
+						updateHash({"mapview":""});
 						$(".fieldSelector").hide();
 						$("#filterLocations").hide();
 						$("#filterClickLocation").removeClass("filterClickActive");
@@ -341,7 +349,6 @@ $(document).ready(function(){
 		if (showLeftIcon) {
 			$("body").prepend( "<div id='sidecolumn-closed' class='hideprint' style='position:relative'><div id='showSide' class='showSide' style='top:108px'><img src='/localsite/img/icon/sidemenu.png' style='width:15px'></div></div>\r" );
  		}
-
 	}
 
 	/*

@@ -71,7 +71,6 @@ var priorHashMap = {};
 function hashChangedMap() {
   let hash = getHash();
 
-
   // For PPE embed, also in map-filters.js. Will likely change
   if (!hash.show) {
     // For embed link
@@ -90,12 +89,16 @@ function hashChangedMap() {
     hiddenhash.state = "GA";
   }
 
-  if (hash.layers !== priorHashMap.layers) {
+  if (hash.name !== priorHashMap.name) {
+    loadMap1("hashChanged() in map.js new name for View Details " + hash.name, hash.show);
+    let offTop = $("#list_main").offset().top - $("#headerbar").height() - $("#filterFieldsHolder").height();
+    window.scroll(0, offTop);
+  } else if (hash.layers !== priorHashMap.layers) {
     //applyIO(hiddenhash.naics);
     loadMap1("hashChangedMap() in map.js layers", hash.show);
   } else if (hash.show !== priorHashMap.show) {
     //applyIO(hiddenhash.naics);
-    loadMap1("hashChangedMap() in map.js", hash.show);
+    loadMap1("hash.show hashChangedMap() in map.js", hash.show);
   } else if (hash.state && hash.state !== priorHashMap.state) {
     // Why are new map points not appearing
 
@@ -128,12 +131,38 @@ function hashChangedMap() {
 
   } else if (hash.cat !== priorHashMap.cat) {
     loadMap1("hashChanged() in map.js new cat " + hash.cat, hash.show);
-  }
+  } 
   priorHashMap = getHash();
 }
 $(document).ready(function () {
   // INIT
   hashChangedMap();
+});
+
+// Allows layers to be fetched using: layerControl[whichmap].getOverlays(); // { Truck 1: true, Truck 2: false, Truck 3: false }
+// the key is the name of the layer. If the layer is showing, it has a value of of true.
+L.Control.Layers.include({
+  getOverlays: function() { // A custom function used for multiple maps
+    // create hash to hold all layers
+    var control, layers;
+    layers = {};
+    control = this;
+
+    // loop thru all layers in control
+    control._layers.forEach(function(obj) {
+      var layerName;
+
+      // check if layer is an overlay
+      if (obj.overlay) {
+        // get name of overlay
+        layerName = obj.name;
+        // store whether it's present on the map or not
+        return layers[layerName] = control._map.hasLayer(obj.layer);
+      }
+    });
+
+    return layers;
+  }
 });
 
 function loadFromSheet(whichmap,whichmap2,dp,basemaps1,basemaps2,attempts,callback) {
@@ -200,7 +229,7 @@ function loadFromSheet(whichmap,whichmap2,dp,basemaps1,basemaps2,attempts,callba
       renderMapShapes("map1", hash, 1); // County select map
     }
     
-    // TRY AGAIN UNTIL #[whichmap] is available.
+    // TRY AGAIN UNTIL #[whichmap] and (whichmap)._leaflet_map are available.
     //if (typeof document.querySelector('#' + whichmap)._leaflet_map === 'undefined') {
     if (typeof document.querySelector('#' + whichmap) === 'undefined' || typeof document.querySelector('#' + whichmap) === 'null') {
       console.log("#" + whichmap + " is undefined. Try again.  Attempt " + attempts);
@@ -212,12 +241,17 @@ function loadFromSheet(whichmap,whichmap2,dp,basemaps1,basemaps2,attempts,callba
         console.log("ERROR #" + whichmap + " - exceeded 100 attempts.");
       }
       return;
-    } else {
-      console.log("typeof document.querySelector: " + typeof document.querySelector('#' + whichmap));
-      console.log("The following 3 are also undefined when working properly...");
-      if (typeof document.querySelector('#' + whichmap)._leaflet_map === 'null') {
-        console.log("DELETE THIS - should no longer be reached now that we check for null 14 lines above.");
+    } 
+
+    /*
+    else if (document.querySelector('#' + whichmap) && typeof document.querySelector('#' + whichmap)._leaflet_map === 'undefined') {
+      //console.log("typeof document.querySelector: " + typeof document.querySelector('#' + whichmap)); // An object, but ._leaflet_map is not yet available
+      //console.log("The following 3 are also undefined when working properly...");
+      //if (typeof document.querySelector('#' + whichmap)._leaflet_map === 'null') { // Caused error: Cannot read properties of null (reading '_leaflet_map')
+      //if (document.querySelector(whichmap) && !document.querySelector(whichmap)._leaflet_map) { // This let a none _leaflet_map pass
+      
         console.log("Property '_leaflet_map' is null for #" + whichmap + ".  Try again. Attempt " + attempts);
+        console.log(typeof document.querySelector('#' + whichmap)._leaflet_map);
         if (attempts <= 100) {
           setTimeout( function() {
             loadFromSheet(whichmap,whichmap2,dp,basemaps1,basemaps2,attempts+1,callback);
@@ -226,10 +260,13 @@ function loadFromSheet(whichmap,whichmap2,dp,basemaps1,basemaps2,attempts,callba
           console.log("ERROR - _leaflet_map null exceeded 100 attempts.");
         }
         return;
-      } else {
+
+    } else {
         console.log("typeof document.querySelector ._leaflet_map: " + typeof document.querySelector('#' + whichmap)._leaflet_map);
-      }
     }
+    */
+
+    console.log("FOUND #" + whichmap);
 
     let map = document.querySelector('#' + whichmap)._leaflet_map; // Recall existing map
 
@@ -460,7 +497,8 @@ function processOutput(dp,map,map2,whichmap,whichmap2,basemaps1,basemaps2,callba
   }
 
   if (dp.showLegend != false) {
-    //addLegend(dp.scale, dp.scaleType, dp.name); // To big and d3-legend.js file is not available in embed, despite 
+    //alert("addLegend")
+    //addLegend(map, dp.scale, dp.scaleType, dp.name); // Too big and d3-legend.js file is not available in embed, despite 
   }
 
   // ADD ICONS TO MAP
@@ -613,8 +651,9 @@ function populateMap(whichmap, dp, callback) { // From JSON within page
 /////////////////////////////////////////
 // helper functions
 /////////////////////////////////////////
-function addLegend(scale, scaleType, title) {
+function addLegend(map, scale, scaleType, title) {
 
+  /*
   $("#allLegends").text(""); // Clear prior results
   var svg = d3.select("#allLegends")
     .append("div")
@@ -643,6 +682,40 @@ function addLegend(scale, scaleType, title) {
 
   //alert($(".legendCells .cell").length)
   $("#legendHolder").height(80 + $(".legendCells .cell").length * 19);
+  */
+
+  // Source: https://leafletjs.com/examples/choropleth/
+  var legend = L.control({position: 'bottomright'});
+
+  legend.onAdd = function (map) {
+
+      var div = L.DomUtil.create('div', 'info legend'),
+          grades = [0, 10, 20, 50, 100, 200, 500, 1000],
+          labels = [];
+
+      // loop through our density intervals and generate a label with a colored square for each interval
+      for (var i = 0; i < grades.length; i++) {
+          div.innerHTML +=
+              '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+              grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+      }
+
+      return div;
+  };
+
+  legend.addTo(map);
+
+
+}
+function getColor(d) {
+    return d > 1000 ? '#800026' :
+           d > 500  ? '#BD0026' :
+           d > 200  ? '#E31A1C' :
+           d > 100  ? '#FC4E2A' :
+           d > 50   ? '#FD8D3C' :
+           d > 20   ? '#FEB24C' :
+           d > 10   ? '#FED976' :
+                      '#FFEDA0';
 }
 
 function hex2rgb(hex) {
@@ -662,6 +735,7 @@ function addIcons(dp,map,map2) {
   var circle,circle2;
   var iconColor, iconColorRGB, iconName;
   var colorScale = dp.scale;
+  let hash = getHash();
   dp.data.forEach(function(element) {
     
     // Add a lowercase instance of each column name
@@ -721,8 +795,6 @@ function addIcons(dp,map,map2) {
 
     if (!element[dp.latColumn] || !element[dp.lonColumn]) {
       console.log("Missing lat/lon: " + name);
-      //console.log(dp.data)
-      console.log(element.plant_or_group.latitude)
       return;
     }
     // Attach the icon to the marker and add to the map
@@ -1028,6 +1100,19 @@ var showprevious = param["show"];
 
 var tabletop; // Allows us to wait for tabletop to load.
 
+function zoomFromKm(kilometers_wide) {
+  //alert(kilometers_wide) // undefined for the 1st of 3.
+  let zoom = 5;
+  if (!kilometers_wide) return zoom;
+  if (kilometers_wide > 1000000) { // Alaska
+    zoom = 4
+  } else if (kilometers_wide > 600000) { // Texas
+    zoom = 5
+  } else if (kilometers_wide > 105000) { // Hawaii and Idaho
+    zoom = 6
+  }
+  return zoom;
+}
 function loadMap1(calledBy, show, dp_incoming) { // Called by this page. Maybe still index.html, map-embed.js
 
   console.log('loadMap1 calledBy ' + calledBy + ' show: ' + show);
@@ -1146,12 +1231,7 @@ function loadMap1(calledBy, show, dp_incoming) { // Called by this page. Maybe s
   if (theState != "") {
     let kilometers_wide = $("#state_select").find(":selected").attr("km");
     //zoom = 1/kilometers_wide * 1800000;
-
-    if (theState == "HI") { // Hawaii
-        dp.zoom = 6
-    } else if (kilometers_wide > 1000000) { // Alaska
-        dp.zoom = 4
-    }
+    zoom = zoomFromKm(kilometers_wide);
     dp.latitude = $("#state_select").find(":selected").attr("lat");
     dp.longitude = $("#state_select").find(":selected").attr("lon");
   }
@@ -1608,7 +1688,9 @@ function loadGeos(geo, attempts, callback) {
     let stateID = {AL:1,AK:2,AZ:4,AR:5,CA:6,CO:8,CT:9,DE:10,FL:12,GA:13,HI:15,ID:16,IL:17,IN:18,IA:19,KS:20,KY:21,LA:22,ME:23,MD:24,MA:25,MI:26,MN:27,MS:28,MO:29,MT:30,NE:31,NV:32,NH:33,NJ:34,NM:35,NY:36,NC:37,ND:38,OH:39,OK:40,OR:41,PA:42,RI:44,SC:45,SD:46,TN:47,TX:48,UT:49,VT:50,VA:51,WA:53,WV:54,WI:55,WY:56,AS:60,GU:66,MP:69,PR:72,VI:78,}
     //let theState = "GA"; // TEMP - TODO: loop trough states from start of geo
     let theState = hash.state;
-
+    if (theState.includes(",")) {
+      theState = theState.substring(0, 2);
+    }
     var geos=geo.split(",");
     fips=[]
     for (var i = 0; i<geos.length; i++){
@@ -2813,7 +2895,7 @@ function styleShape(feature) { // Called for each topojson row
   if (hash.geo && hash.geo.includes("US" + feature.properties.STATEFP + feature.properties.COUNTYFP)) {
       fillColor = 'purple';
       fillOpacity = .2;
-  } else if (hash.view == "country" && hash.state && hash.state.includes(stateID)) {
+  } else if (hash.mapview == "country" && hash.state && hash.state.includes(stateID)) {
       fillColor = 'red';
       fillOpacity = .2;
   }
@@ -2847,10 +2929,11 @@ function getStateNameFromID(stateID) {
   return(stateName);
 }
 
-// DISPLAY
+// DISPLAY geomap - first of three maps
 
+var geojsonLayer; // Hold the prior letter. We can use an array or object instead.
+var overlays = {}; // Also overlays1 and overlays2 above.
 function renderMapShapes(whichmap, hash, attempts) {
-
   //alert("renderMapShapes state: " + hash.state + " attempts: " + attempts);
 
   loadScript(local_app.modelearth_root() + '/localsite/js/topojson-client.min.js', function(results) {
@@ -2882,7 +2965,7 @@ function renderMapShapes(whichmap, hash, attempts) {
 
     var stateCount = typeof hash.state !== "undefined" ? hash.state.split(",").length : 0;
     //alert("hash.state: " + hash.state + " stateCount: " + stateCount);
-    if (stateCount > 1 && hash.view != "country") {
+    if (stateCount > 1 && hash.mapview != "country") {
       hash.state.split(",").forEach(function(state) {
         hashclone = $.extend(true, {}, hash); // Clone/copy object without entanglement
         hashclone.state = state; // One state at a time
@@ -2943,14 +3026,14 @@ function renderMapShapes(whichmap, hash, attempts) {
       var url;
       let topoObjName = "";
       var layerName = "Map Layer";
-      if (stateAbbr.length <= 1 || hash.view == "country") { // USA
+      if (stateAbbr.length <= 1 || hash.mapview == "country") { // USA
         layerName = "States";
         url = local_app.modelearth_root() + "/localsite/map/topo/states-10m.json";
         topoObjName = "topoob.objects.states";
-        $("#geomap").width("800px");
+        $("#geomap").width("700px");
         $(".geoListHolder").hide();
       } else { // COUNTIES
-        layerName = "Counties";
+        layerName = stateAbbr + " Counties";
         let stateNameLowercase = getStateNameFromID(stateAbbr).toLowerCase();
         let countyFileTerm = "-counties.json";
         let countyTopoTerm = "_county_20m";
@@ -2959,7 +3042,8 @@ function renderMapShapes(whichmap, hash, attempts) {
           countyTopoTerm = "_parish_20m";
         }
 
-        $("#geomap").width("440px");
+        //$("#geomap").width("440px");
+        $("#geomap").width("700px");
         $(".geoListHolder").show();
         url = local_app.modelearth_root() + "/topojson/countries/us-states/" + stateAbbr + "-" + state2char + "-" + stateNameLowercase.replace(/\s+/g, '-') + countyFileTerm;
         topoObjName = "topoob.objects.cb_2015_" + stateNameLowercase.replace(/\s+/g, '_') + countyTopoTerm;
@@ -2968,7 +3052,6 @@ function renderMapShapes(whichmap, hash, attempts) {
         // IMPORTANT: ALSO change localhost setting that uses cb_2015_alabama_county_20m below
       }
   //}
-    //var layerControl_CountyMap = {}; // Object containing one control for each map on page.
 
     req.open('GET', url, true);
     req.onreadystatechange = handler;
@@ -2997,7 +3080,6 @@ function renderMapShapes(whichmap, hash, attempts) {
 
             //"arcs":[[38,39,40,41,42]],"type":"Polygon","properties":{"STATEFP":"13","COUNTYFP":"003","COUNTYNS":"00345784","AFFGEOID":"0500000US13003","GEOID":"13003","NAME":"Atkinson","LSAD":"06","ALAND":879043416,"AWATER":13294218}}
 
-            console.log("topojson")
 
             // Since this line returns error, subsquent assignment to "neighbors" can be removed, or update with Community Forecasting boundaries.
             //console.log(topojson)
@@ -3056,7 +3138,7 @@ function renderMapShapes(whichmap, hash, attempts) {
             //console.log('topodata: ', topodata)
 
             //geojsonLayer.clearLayers(); // Clear prior
-            //        layerControl_CountyMap.clearLayers();
+            //        layerControl[whichmap].clearLayers();
 
             
 
@@ -3085,19 +3167,13 @@ function renderMapShapes(whichmap, hash, attempts) {
 
       var zoom = 7;
       let theState = $("#state_select").find(":selected").val();
-      if (theState == "" || hash.view == "country") {
+      if (theState == "" || hash.mapview == "country") {
         zoom = 4
-        lat = "39.50"
-        lon = "-98.35"
+        lat = "39.5"
+        lon = "-96"
       } else {
         let kilometers_wide = $("#state_select").find(":selected").attr("km");
-        //zoom = 1/kilometers_wide * 1800000;
-
-        if (theState == "HI") { // Hawaii
-            zoom = 6
-        } else if (kilometers_wide > 1000000) { // Alaska
-            zoom = 4
-        }
+        zoom = zoomFromKm(kilometers_wide);
         lat = $("#state_select").find(":selected").attr("lat");
         lon = $("#state_select").find(":selected").attr("lon");
       }
@@ -3140,67 +3216,7 @@ function renderMapShapes(whichmap, hash, attempts) {
         //alert("container null")
         // Line above does not work, so we remove map:
 
-        try { // Traps the first to avoid error when changing from US to state, or adding state.
-          map.remove(); // removes the previous map element using Leaflet's library (instead of jquery's).
-
-
-        } catch(e) {
-
-        }        
-
-          map = L.map(whichmap, {
-            center: new L.LatLng(lat,lon),
-            scrollWheelZoom: false,
-            zoom: zoom,
-            dragging: !L.Browser.mobile, 
-            tap: !L.Browser.mobile
-          });
-
-        
-        
-
-    } else if (geojsonLayer) {
-      console.log("DISABLE REMOVE - Remove the prior topo layer")
-      //alert("has geojsonLayer")
-
-
-      // Prevent drawing on top of 
-
-      // Night need to limit when this occurs by tralling, not sure if this is still an error:
-      
-        // Causes error in /map : leaflet.js:5 Uncaught TypeError: Cannot read property '_removePath' of undefined
-        if(map.hasLayer(geojsonLayer)) {
-          //alert("HAS LAYER")
-          map.removeLayer(geojsonLayer); // Remove the prior topo layer
-          //map.geojsonLayer.clearLayers();
-        }
-        //map.geojsonLayer.clearLayers(); // Clear prior
-        map.setView(mapCenter,zoom);
-
-        // setView(lng, lat, zoom = zoom_level)
-      
-    }
-
-    if (map) {
-      geojsonLayer = L.geoJson(topodata, {style:styleShape, onEachFeature: onEachFeature}).addTo(map); // Called within addTo(map)
-    } else {
-      console.log("WARNING - map not available from _leaflet_map")
-    }
-
-    var baseLayers = {
-      "Open Street Map": OpenStreetMap_BlackAndWhite,
-      "Grayscale Mapbox": grayscale,
-      "Streets Mapbox": streets,
-      "Satellite Mapbox": satellite
-    };
-    
-    // Name it "States" or "Counties"
-    var overlays = {
-      [layerName]: geojsonLayer
-    };
-
-
-    var basemaps1 = {
+        var basemaps1 = {
       'Satellite' : L.tileLayer(mbUrl, {maxZoom: 25, id: 'mapbox.satellite', attribution: mbAttr}),
       // OpenStreetMap
       'Street Map' : L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -3212,12 +3228,163 @@ function renderMapShapes(whichmap, hash, attempts) {
       }),
     }
 
+
+        container = L.DomUtil.get(whichmap);
+        if(container != null) {
+          container._leaflet_id = null; // Prevents error: Map container is already initialized.
+        }
+
+        // Try commenting this out
+        /*
+        try { // Traps the first to avoid error when changing from US to state, or adding state.
+          //map.off();
+          map.remove(); // removes the previous map element using Leaflet's library (instead of jquery's).
+
+
+        } catch(e) {
+
+        }        
+        */
+        if(!map) {
+          map = L.map(whichmap, {
+            center: new L.LatLng(lat,lon),
+            scrollWheelZoom: false,
+            zoom: zoom,
+            dragging: !L.Browser.mobile, 
+            tap: !L.Browser.mobile
+          });
+
+          //L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+          //    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+          //}).addTo(map);
+
+
+
+        }
+        
+          // Add 
+        overlays[layerName] = L.geoJson(topodata, {style:styleShape, onEachFeature: onEachFeature}).addTo(map); // Called within addTo(map)
+    
+        layerControl[whichmap] = L.control.layers(basemaps1, overlays).addTo(map); // Push multple layers
+        basemaps1["Grey"].addTo(map);
+
+
+    //} else if (geojsonLayer) { // INDICATES TOPO WAS ALREADY LOADED
+    } else if (map.hasLayer(overlays[layerName])) {
+
+      // TESTING
+      //alert("HAS LAYER " + layerName)
+
+        // Add 
+      //geojsonLayer = L.geoJson(topodata, {style:styleShape, onEachFeature: onEachFeature}).addTo(map); // Called within addTo(map)
+    
+      //map.removeLayer(overlays[layerName]);
+
+      // layerControl[whichmap]
+      map.removeLayer(overlays[layerName]); // Removed overlay but not checkbox. (Temp reduction of doubling)
+
+      //map.removeOverlay(overlays[layerName]);
+
+      //layerControl[whichmap].addOverlay(overlays[layerName], layerName); // Sorta works - use to add a duplicate check box
+      
+      //layerControl[whichmap].removeOverlay(layerName);
+      //layerControl[whichmap].removeOverlay(overlays[layerName], layerName);
+
+      overlays[layerName] = L.geoJson(topodata, {
+            style: styleShape, 
+            onEachFeature: onEachFeature
+      }).addTo(map);
+
+      /*
+      var geojsonLayer = L.geoJson(topodata, {
+            style: styleShape, 
+            onEachFeature: onEachFeature
+      }).addTo(map);
+      overlays[layerName] = geojsonLayer;
+      */
+
+
+      //console.log("DISABLE REMOVE - Remove the prior topo layer")
+      //alert("Remove prior, has geojsonLayer")
+
+
+      /*
+      // Prevent drawing on top of 
+      
+        // Causes error in /map : leaflet.js:5 Uncaught TypeError: Cannot read property '_removePath' of undefined
+        //if(map.hasLayer(geojsonLayer)) {
+        
+          alert("HAS PRIOR LAYER, REMOVE")
+          //alert("Need to check if already exists: " + layerName);
+          // Need to use name of prior layer.
+          //map.removeLayer(geojsonLayer); // Prevents overlapping by removing the prior topo layer
+          ////map.geojsonLayer.clearLayers();
+
+          //alert(overlays[layerName])
+          overlays[layerName].remove(); // Prevent thick overlapping colors
+          //overlays[layerName].clearLayers();
+          map.removeLayer(overlays[layerName]);
+        
+        //map.geojsonLayer.clearLayers(); // Clear prior
+        */
+
+        map.setView(mapCenter,zoom);
+
+        // setView(lng, lat, zoom = zoom_level)
+      
+
+        
+    } else { // Add the new state
+
+      overlays[layerName] = L.geoJson(topodata, {
+            style: styleShape, 
+            onEachFeature: onEachFeature
+      }).addTo(map);
+
+      map.setView(mapCenter,zoom);
+    }
+    
+
+
+
+    /* From other map, probably not Leaflet
+    var layersToRemove = [];
+    map.getLayers().forEach(function (layer) {
+        if (layer.get('name') != undefined && layer.get('name') === layerName) {
+            layersToRemove.push(layer);
+        }
+    });
+    var len = layersToRemove.length;
+    for(var i = 0; i < len; i++) {
+        map.removeLayer(layersToRemove[i]);
+        alert("remove layer: " + layersToRemove[i])
+    }
+    */
+
+
+
+
+
+    /// JUNK, probably
+
+    if (map) {
+    } else {
+      console.log("WARNING - map not available from _leaflet_map")
+    }
+
+    var baseLayers = {
+      "Open Street Map": OpenStreetMap_BlackAndWhite,
+      "Grayscale Mapbox": grayscale,
+      "Streets Mapbox": streets,
+      "Satellite Mapbox": satellite
+    };
+    
       //dataParameters.forEach(function(ele) {
         //overlays[ele.name] = ele.group; // Allows for use of dp.name with removeLayer and addLayer
         //console.log("Layer added: " + ele.name);
       //})
 
-      //if(layerControl_CountyMap === false) { // First time, add new layer
+      //if(layerControl[whichmap] === false) { // First time, add new layer
         // Add the layers control to the map
       //  layerControl_CountyMap = L.control.layers(baseLayers, overlays).addTo(map);
       //}
@@ -3225,12 +3392,12 @@ function renderMapShapes(whichmap, hash, attempts) {
       if (typeof layerControl != "undefined") {
         //alert("OKAY: layerControl is available to CountyMap.")
 
-        // layerControl is declaired in map.js
+        // layerControl object is declared in map.js. Contains element for each map.
         if (layerControl[whichmap] != undefined) {
-          if (overlays["Counties"]) {
+          if (overlays[stateAbbr + " Counties"]) {
             // Reached on county click, but shapes are not removed.
-            console.log("overlays: ");
-            console.log(overlays);
+            //console.log("overlays: ");
+            //console.log(overlays);
             
             //resetHighlight(layerControl[whichmap].);
             // No effect
@@ -3244,19 +3411,80 @@ function renderMapShapes(whichmap, hash, attempts) {
             //map.removeLayer(geojsonLayer); // Remove the prior topo layer
           }
       }
+
         // layerControl wasn't yet available in loading sequence.
         // Could require localsite/js/map.js load first, but top maps might not always be loaded.
         // Or only declare layerControl object if not yet declared.
 
         if (map) {
-            if (layerControl[whichmap] == undefined) {
+            if (layerControl[whichmap] == undefined) { //NEW MAP
+              //TESTING
+              //alert("NEW MAP " + whichmap)
+
+              //overlays = {
+              //  [layerName]: geojsonLayer
+              //};
+              //overlays[layerName] = geojsonLayer;
 
 
-              layerControl[whichmap] = L.control.layers(basemaps1, overlays).addTo(map); // Push multple layers
-              basemaps1["Grey"].addTo(map);
-            } else {
+              //layerControl[whichmap] = L.control.layers(basemaps1, overlays).addTo(map); // Push multple layers
+              //basemaps1["Grey"].addTo(map);
+
+
+
+              // layerControl[whichmap]
+          
+              /*
+              // create the master layer group
+              var masterLayerGroup = L.layerGroup().addTo(map);
+
+              // create layer groups
+              var aLayerGroup = L.layerGroup([
+                // create a bunch of layers
+              ]);
+
+              masterLayerGroup.addLayer(aLayerGroup);
+              */
+
+            //} else if (!overlays[layerName]) {
+            } else if (!map.hasLayer(overlays[layerName])) { // LAYER NOT ADDED YET
+
               // Error: Cannot read property 'on' of undefined
               //layerControl[whichmap].addOverlay(dp.group, dp.dataTitle); // Appends to existing layers
+              //alert("Existing " + whichmap + " has no overlay for: " + layerName)
+
+              console.log("getOverlays");
+              console.log(layerControl[whichmap].getOverlays());
+
+              //if(map.hasLayer(geojsonLayer)) {
+                //alert("HAS LAYER")
+                //map.removeLayer(geojsonLayer); // Remove the prior topo layer - BUGBUG this hid the new layer.
+                ////map.geojsonLayer.clearLayers();
+              //}
+
+              //overlays[layerName] = geojsonLayer; // Add element to existing overlays object.
+
+              //overlays[layerName] = stateAbbr + " Counties";
+              //alert("geojsonLayer test")
+              //alert(stateAbbr)
+              //alert(geojsonLayer)
+
+              // Add dup
+              //layerControl[whichmap].addOverlay(geojsonLayer, stateAbbr + " Counties");
+
+
+              //layerControl[whichmap].addLayer(stateAbbr + " Counties");
+              //layerControl[whichmap].addOverlay(geojsonLayer, overlays);
+
+              //layerControl[whichmap].addOverlay(basemaps1, overlays); // Appends to existing layers
+              //layerControl[whichmap] = L.control.layers(basemaps1, overlays).addTo(map); 
+            } else {
+              //alert("DELETE ALL OF THIS PART layer already exists2: " + layerName);
+              //overlays[layerName].remove(); // Also above
+              
+              //map.removeLayer(overlays[layerName]);
+              //layerControl[whichmap].removeOverlay(overlays[layerName]);
+
             }
         }
 
@@ -3301,7 +3529,7 @@ function renderMapShapes(whichmap, hash, attempts) {
         }
    
         function resetHighlight(e){
-          geojsonLayer.resetStyle(e.target);
+          overlays[layerName].resetStyle(e.target);
           info.update();
         }
 

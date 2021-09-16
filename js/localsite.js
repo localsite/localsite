@@ -119,7 +119,7 @@ function initateHiddenhash() { // Load in values from params on javascript inclu
   let scripts = document.getElementsByTagName('script'); 
   let myScript = scripts[ scripts.length - 1 ]; // Last script on page, typically the current script localsite.js
   //let myScript = null;
-  // Now try to find one containging map-embed.js
+  // Now try to find one containing map-embed.js
   for (var i = 0; i < scripts.length; ++i) {
       if(scripts[i].src && scripts[i].src.indexOf('map-embed.js') !== -1){
         myScript = scripts[i];
@@ -136,8 +136,10 @@ function initateHiddenhash() { // Load in values from params on javascript inclu
   for (let i = 0; i < includepairs.length; i++) {
     if(!includepairs[i]) continue;
     let pair = includepairs[i].split('=');
-    hiddenhash[pair[0].toLowerCase()] = decodeURIComponent(pair[1]);
-    //consoleLog("Param from javascript include: " + pair[0].toLowerCase() + " " + decodeURIComponent(pair[1]));
+    if (pair[1]) {
+      hiddenhash[pair[0].toLowerCase()] = decodeURIComponent(pair[1].replace(/\+/g, " "));
+      //consoleLog("Param from javascript include: " + pair[0].toLowerCase() + " " + decodeURIComponent(pair[1]));
+    }
   }
 }
 
@@ -222,8 +224,6 @@ function mix(incoming, target) { // Combine two objects, priority to incoming. D
    }   return target2;
 }
 function getHash() { // Includes hiddenhash
-    //return getHashOnly(); // Test
-    //alert("cat test in " + hiddenhash.cat);
     return (mix(getHashOnly(),hiddenhash));
 }
 function getHashOnly() {
@@ -716,7 +716,7 @@ loadScript(theroot + 'js/jquery.min.js', function(results) {
       // Setting up listener for font checking
       var font = "1rem 'Material Icons'";
       document.fonts.addEventListener('loadingdone', function(event) {
-          console.log(`Checking ${font}: ${ document.fonts.check(font)}`);
+          console.log("Font loaded: ${font}: ${ document.fonts.check(font)}");
       })
 
       // Loading font
@@ -1242,3 +1242,6 @@ addEventListener("load", function(){
 String.prototype.toTitleCase = function () {
     return this.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
 };
+function getKeyByValue(object, value) {
+  return Object.keys(object).find(key => object[key] === value);
+}
