@@ -613,7 +613,6 @@ function filterClickLocation(loadGeoTable) {
         }
         updateHash({"mapview":""});
 	} else { // OPEN MAP FILTER
-		//alert("Open map filter")
 		let hash = getHash();
 		if (hash.mapview == "country") {
 			$("#geoPicker").show(); // Required for map to load
@@ -631,12 +630,12 @@ function filterClickLocation(loadGeoTable) {
 				goHash({"mapview":"state"});
 			}
 		}
+		$("#geoPicker").show();
+		$("#filterLocations").show();
 		$(".locationTabText").text("Locations");
 		$("#topPanel").hide();
-		
         $("#showLocations").show();
 		$("#hideLocations").hide();
-		$("#filterLocations").show(); // Than we need to load the state.
 		locationFilterChange("counties");
 
 		if (hash.geo) {
@@ -1567,7 +1566,11 @@ function displayHexagonMenu(layerName,siteObject) {
 }
 function thumbClick(show,path) {
 	let hash = getHashOnly(); // Not hiddenhash
+	let priorShow = hash.show;
 	hash.show = show;
+	if (!hash.state && param.state) {
+		hash.state = param.state; // At least until states are pulled from geo values.
+	}
 	delete hash.cat;
 	delete hash.naics;
 	delete hash.m; // Birdseye view
@@ -1575,12 +1578,14 @@ function thumbClick(show,path) {
 		var hashString = decodeURIComponent($.param(hash));
 		window.location = "/localsite/" + path + "#" + hashString;
 	} else { // Remain in current page
-        delete hiddenhash.show;
-        delete hiddenhash.naics;
-        delete param.show;
-        if (typeof params != 'undefined') {
-            delete params.show;
-        }
+		if (show != priorShow) {
+	        delete hiddenhash.show;
+	        delete hiddenhash.naics;
+	        delete param.show;
+	        if (typeof params != 'undefined') {
+	            delete params.show;
+	        }
+	    }
 		$(".bigThumbMenuContent").removeClass("bigThumbActive");
 		$(".bigThumbMenuContent[show='" + show +"']").addClass("bigThumbActive");
 		goHash(hash);
@@ -2052,7 +2057,7 @@ function hashChanged() {
   	// This function now invoke loadMap1 - replaces index.html and map-embed.js.
   	
 	let loadGeomap = false;
-	param = mix(param,loadParams(location.search,location.hash)); // param is declared in localsite.js. Give priority to param updates within code.
+	//param = mix(param,loadParams(location.search,location.hash)); // param is declared in localsite.js. Give priority to param updates within code.
 
 	let hash = getHash(); // Includes changes to hiddenhash
 	if (hash.show == "undefined") { // To eventually remove
@@ -2061,6 +2066,7 @@ function hashChanged() {
 		updateHash({'show':''}); // Remove from URL hash without invoking hashChanged event.
 	}
 	// For PPE embed, also in map.js. Will likely change
+	/*
 	if (!hash.show) {
 		// For embed link
         if (param.show) {
@@ -2073,17 +2079,17 @@ function hashChanged() {
 		hash.state = param.state;
 		hiddenhash.state = param.state;
 	}
+	*/
 
-	  // Temp for PPE
-	  if (!hash.state && location.host.indexOf("georgia") >= 0) {
+	// Temp for PPE
+	if (!hash.state && location.host.indexOf("georgia") >= 0) {
 	    hash.state = "GA";
 	    hiddenhash.state = "GA";
-	  }
+	}
 
 	populateFieldsFromHash();
 	productList("01","99","All Harmonized System Categories"); // Sets title for new HS hash.
 
-	// NOTE: params after ? are not included, just the hash.
 	if (hash.state) {
 		// Apply early since may be used by changes to geo
 		$("#state_select").val(hash.state.toUpperCase());
@@ -2210,7 +2216,8 @@ function hashChanged() {
 	}
 	
 	if (mapCenter.length > 0) { // Set when hash.lat changes
-		if (typeof L != "undefined") {
+		//if (typeof L != "undefined") {
+		if (typeof L.DomUtil === "object") {
 			// Avoiding including ",5" for zoom since 7 is already set. 
 	        // NOT IDEAL: This also runs during init.
 	        // TODO: If reactiveating, omit on init, or pass in default zoom.
@@ -2225,7 +2232,8 @@ function hashChanged() {
 	        */
 	        if (typeof document.querySelector('#map2') === 'undefined' || typeof document.querySelector('#map2') === 'null') {
 	            console.log("#map2 undefined");
-	        } else {
+	        } else if (document.querySelector('#map2')) {
+
 	    	    let pagemap2 = document.querySelector('#map2')._leaflet_map; // Recall existing map
 	    	    let pagemap_container2 = L.DomUtil.get(pagemap2);
 	    	    // This will not be reachable on initial load.
@@ -2257,6 +2265,12 @@ function hashChanged() {
         let theStateNameLowercase = theStateName.toLowerCase();
 
         let imageUrl = "https://model.earth/us-states/images/backgrounds/1280x720/landscape/" + theStateNameLowercase.replace(/\s+/g, '-') + ".jpg";
+        if (theStateNameLowercase == "georgia") {
+        	imageUrl = "/apps/img/hero/state/GA/GA-hero.jpg";
+        }
+        if (theStateName.length == 0) {
+        	imageUrl = "/apps/img/hero/state/GA/GA-hero.jpg";
+        }
         let imageUrl_scr = "url(" + imageUrl + ")";
         $("#hero-landscape-image").css('background-image', imageUrl_scr);
 
@@ -2280,7 +2294,10 @@ function hashChanged() {
 	}
     //Resides before geo
     if (hash.regiontitle != priorHash.regiontitle || hash.state != priorHash.state || hash.show != priorHash.show) {
-        let theStateName = $("#state_select").find(":selected").text();
+        let theStateName;
+        if ($("#state_select").find(":selected").value) {
+        	theStateName = $("#state_select").find(":selected").text();
+        }
         if (theStateName != "") {
         	$(".statetitle").text(theStateName);
         	$(".regiontitle").text(theStateName);
@@ -2299,17 +2316,19 @@ function hashChanged() {
             $(".regiontitle").text("United States");
             $(".locationTabText").text("United States");
         }
+
         if(!hash.regiontitle) {
             //alert("no hash.regiontitle")
             delete hiddenhash.loctitle;
             delete hiddenhash.geo;
-            delete param.geo;
+            //delete param.geo;
             $(".regiontitle").text("");
-            // Allows full "United States" to be included from above.
-            if (hash.show) {
-                $(".region_service").text($(".locationTabText").text() + " - " + hash.show.toTitleCase());
+            // Could add full "United States" from above. Could display longer "show" manufacing title.
+            if (hash.show && local_app.loctitle) {
+                $(".region_service").text(local_app.loctitle + " - " + hash.show.toTitleCase());
+            } else if (hash.show) {
+                $(".region_service").text(hash.show.toTitleCase());
             } else {
-                //$(".region_service").text($(".locationTabText").text());
                 $(".region_service").text("Top " + $(".locationTabText").text() + " Industries");
             }
         } else {

@@ -1,3 +1,7 @@
+
+// TO DO - Use group to remove prior layer.
+// https://stackoverflow.com/questions/38845292/filter-leaflet-geojson-object-based-on-checkbox-status/38845970#38845970
+
 // INIT
 var dataParameters = [];
 var dp = {};
@@ -70,6 +74,11 @@ document.addEventListener('hiddenhashChangeEvent', function (elem) {
 var priorHashMap = {};
 function hashChangedMap() {
   let hash = getHash();
+
+  if (hash.show == "undefined") { // To eventually remove
+    delete hash.show; // Fix URL bug from indicator select hamburger menu
+    updateHash({'show':''}); // Remove from URL hash without invoking hashChanged event.
+  }
 
   // For PPE embed, also in map-filters.js. Will likely change
   if (!hash.show) {
@@ -241,17 +250,10 @@ function loadFromSheet(whichmap,whichmap2,dp,basemaps1,basemaps2,attempts,callba
         console.log("ERROR #" + whichmap + " - exceeded 100 attempts.");
       }
       return;
-    } 
-
-    /*
-    else if (document.querySelector('#' + whichmap) && typeof document.querySelector('#' + whichmap)._leaflet_map === 'undefined') {
-      //console.log("typeof document.querySelector: " + typeof document.querySelector('#' + whichmap)); // An object, but ._leaflet_map is not yet available
-      //console.log("The following 3 are also undefined when working properly...");
-      //if (typeof document.querySelector('#' + whichmap)._leaflet_map === 'null') { // Caused error: Cannot read properties of null (reading '_leaflet_map')
-      //if (document.querySelector(whichmap) && !document.querySelector(whichmap)._leaflet_map) { // This let a none _leaflet_map pass
-      
-        console.log("Property '_leaflet_map' is null for #" + whichmap + ".  Try again. Attempt " + attempts);
-        console.log(typeof document.querySelector('#' + whichmap)._leaflet_map);
+    } else if (document.querySelector('#' + whichmap) && typeof L.DomUtil != "object") { // Wait for Leaflet library
+      //if (document.querySelector('#' + whichmap) && !document.querySelector'#' + whichmap)._leaflet_map) { // Won't work because ._leaflet_map always equals "undefined"
+        console.log("L.DomUtil not available for #" + whichmap + ".  Try again. Attempt " + attempts);
+        console.log(typeof L.DomUtil);
         if (attempts <= 100) {
           setTimeout( function() {
             loadFromSheet(whichmap,whichmap2,dp,basemaps1,basemaps2,attempts+1,callback);
@@ -260,8 +262,9 @@ function loadFromSheet(whichmap,whichmap2,dp,basemaps1,basemaps2,attempts,callba
           console.log("ERROR - _leaflet_map null exceeded 100 attempts.");
         }
         return;
-
-    } else {
+    }
+    /*
+    else {
         console.log("typeof document.querySelector ._leaflet_map: " + typeof document.querySelector('#' + whichmap)._leaflet_map);
     }
     */
@@ -1337,7 +1340,8 @@ function loadMap1(calledBy, show, dp_incoming) { // Called by this page. Maybe s
         dp.listTitle = "Environmental Product Declarations";
         dp.listInfo = "EPD directory data from <a href='https://BuildingTransparency.org' target='_blank'>Building Transparency</a>";
         dp.datatype = "json";
-        dp.dataset = "https://buildingtransparency.org/api/materials?page_number=1&page_size=1000&soft_search_terms=true&category=b03dba1dca5b49acb1a5aa4daab546b4&jurisdiction=[jurisdiction]&epd__date_validity_ends__gt=2021-08-24";
+        // Limited to 20 reduces time to 4 seconds, verse 8 seconds for 250.  251 returns 250.
+        dp.dataset = "https://buildingtransparency.org/api/materials?page_number=1&page_size=251&soft_search_terms=true&category=b03dba1dca5b49acb1a5aa4daab546b4&jurisdiction=[jurisdiction]&epd__date_validity_ends__gt=2021-08-24";
         dp.headerAuth = "{'Authorization':'Bearer 204ad15687571d9c62bdfa780526b1514c090f68'}";
 
         dp.latColumn = "plant_or_group.latitude";
@@ -1362,7 +1366,7 @@ function loadMap1(calledBy, show, dp_incoming) { // Called by this page. Maybe s
         dp.dataset =  local_app.custom_data_root() + "360/GeorgiaPowerSites.csv";
 
       } else if (show == "recycling" || show == "transfer" || show == "recyclers" || show == "inert" || show == "landfills") { // recycling-processors
-        if (!param.state || param.state == "GA") {
+        if (!hash.state || hash.state == "GA") {
           dp.editLink = "https://docs.google.com/spreadsheets/d/1YmfBPEFpfmaKmxcnxijPU8-esVkhaVBE1wLZqPNOKtY/edit?usp=sharing";
           dp.googleDocID = "1YmfBPEFpfmaKmxcnxijPU8-esVkhaVBE1wLZqPNOKtY";
           if (show == "transfer") {
@@ -1437,7 +1441,7 @@ function loadMap1(calledBy, show, dp_incoming) { // Called by this page. Maybe s
         console.log("map.js loading " + local_app.custom_data_root() + "communities/map-georgia-smart.csv");
 
         dp.dataset =  local_app.custom_data_root() + "communities/map-georgia-smart.csv";
-        dp.listInfo = "Includes Georgia Smart Community Projects";
+        dp.listInfo = "Includes <a href='https://smartcities.gatech.edu/georgia-smart' target='_blank'>Georgia Smart</a> Community Projects. <a href='https://github.com/GeorgiaData/georgia-data/blob/master/communities/map-georgia-smart.csv'>Submit changes</a>";
         dp.search = {"In Title": "title", "In Description": "description", "In Website URL": "website", "In Address": "address", "In City Name": "city", "In Zip Code" : "zip"};
         dp.markerType = "google";
         //dp.showShapeMap = true; // Shows county borders
@@ -1688,12 +1692,12 @@ function loadGeos(geo, attempts, callback) {
     let stateID = {AL:1,AK:2,AZ:4,AR:5,CA:6,CO:8,CT:9,DE:10,FL:12,GA:13,HI:15,ID:16,IL:17,IN:18,IA:19,KS:20,KY:21,LA:22,ME:23,MD:24,MA:25,MI:26,MN:27,MS:28,MO:29,MT:30,NE:31,NV:32,NH:33,NJ:34,NM:35,NY:36,NC:37,ND:38,OH:39,OK:40,OR:41,PA:42,RI:44,SC:45,SD:46,TN:47,TX:48,UT:49,VT:50,VA:51,WA:53,WV:54,WI:55,WY:56,AS:60,GU:66,MP:69,PR:72,VI:78,}
     //let theState = "GA"; // TEMP - TODO: loop trough states from start of geo
     let theState = hash.state;
-    if (theState.includes(",")) {
+    if (theState && theState.includes(",")) {
       theState = theState.substring(0, 2);
     }
     var geos=geo.split(",");
     fips=[]
-    for (var i = 0; i<geos.length; i++){
+    for (var i = 0; i < geos.length; i++){
         fip=geos[i].split("US")[1]
         if (fip) {
           if(fip.startsWith("0")){
@@ -1919,7 +1923,6 @@ function showList(dp,map) {
     dp.data = data_sorted;
   }
 
-  //alert(dp.data); //TEMP
   let hash = getHash(); 
 
   dp.data.forEach(function(elementRaw) {
@@ -2746,9 +2749,13 @@ var topMenuHeight = 150;
 
 var mapFixed = false;
 var previousScrollTop = $(window).scrollTop();
+
 $(window).scroll(function() {
   if (revealHeader == false) {
-    $("#headerFixed").addClass("headerShort"); $('.headerbar').hide(); $('.headerOffset').hide(); $('.showMenuSmNav').show(); $('#logoholderbar').show(); $('#logoholderside').show();
+    $("#headerFixed").addClass("headerShort"); $('.headerbar').hide(); $('.headerOffset').hide(); $('#logoholderbar').show(); $('#logoholderside').show();
+    if (param.showheader != "false") {
+      $('.showMenuSmNav').show(); 
+    }
     $('#filterFieldsHolder').hide();
     $('.headerOffset').hide();
 
@@ -2762,7 +2769,10 @@ $(window).scroll(function() {
     revealHeader = true; // For next manual scroll
   } else if ($(window).scrollTop() > previousScrollTop) { // Scrolling Up
     if ($(window).scrollTop() > previousScrollTop + 20) { // Scrolling Up fast
-      $("#headerFixed").addClass("headerShort"); $('.headerbar').hide(); $('.headerOffset').hide(); $('.showMenuSmNav').show(); $('#logoholderbar').show(); $('#logoholderside').show();
+      $("#headerFixed").addClass("headerShort"); $('.headerbar').hide(); $('.headerOffset').hide(); $('#logoholderbar').show(); $('#logoholderside').show();
+      if (param.showheader != "false") {
+        $('.showMenuSmNav').show(); 
+      }
       //$('#filterFieldsHolder').hide();
       $('.headerOffset').hide();
       //alert("4")
@@ -2774,19 +2784,25 @@ $(window).scroll(function() {
     }
   } else { // Scrolling Down
     if ($(window).scrollTop() < (previousScrollTop - 20)) { // Reveal if scrolling down fast
-      $("#headerFixed").removeClass("headerShort"); $('.headerbar').show(); $('.headerOffset').show(); $('.showMenuSmNav').hide(); $('#logoholderbar').hide(); $('#logoholderside').hide();
+      $("#headerFixed").removeClass("headerShort"); $('.headerbar').show(); $('#logoholderbar').hide(); $('#logoholderside').hide();
       //$('#filterFieldsHolder').show();
       if ($("#headerbar").length) {
-        $('.headerOffset').show();
+        if (param.showheader != "false") {
+          $('.headerOffset').show();
+          $('.showMenuSmNav').hide();
+        }
         $('#sidecolumnContent').css("top","150px");
         $('#showSide').css("top","108px");
       }
       $('#headerFixed').show();
     } else if ($(window).scrollTop() == 0) { // At top
-      $("#headerFixed").removeClass("headerShort"); $('.headerbar').show(); $('.headerOffset').show(); $('.showMenuSmNav').hide(); $('#logoholderbar').hide(); $('#logoholderside').hide();
+      $("#headerFixed").removeClass("headerShort"); $('.headerbar').show(); $('#logoholderbar').hide(); $('#logoholderside').hide();
       //$('#filterFieldsHolder').show();
       if ($("#headerbar").length) {
-        $('.headerOffset').show();
+        if (param.showheader != "false") {
+          $('.headerOffset').show();
+          $('.showMenuSmNav').hide();
+        }
         $('#sidecolumnContent').css("top","150px");
         $('#showSide').css("top","108px");
       }
@@ -3453,8 +3469,7 @@ function renderMapShapes(whichmap, hash, attempts) {
               //layerControl[whichmap].addOverlay(dp.group, dp.dataTitle); // Appends to existing layers
               //alert("Existing " + whichmap + " has no overlay for: " + layerName)
 
-              console.log("getOverlays");
-              console.log(layerControl[whichmap].getOverlays());
+              
 
               //if(map.hasLayer(geojsonLayer)) {
                 //alert("HAS LAYER")
@@ -3465,9 +3480,6 @@ function renderMapShapes(whichmap, hash, attempts) {
               //overlays[layerName] = geojsonLayer; // Add element to existing overlays object.
 
               //overlays[layerName] = stateAbbr + " Counties";
-              //alert("geojsonLayer test")
-              //alert(stateAbbr)
-              //alert(geojsonLayer)
 
               // Add dup
               //layerControl[whichmap].addOverlay(geojsonLayer, stateAbbr + " Counties");
@@ -3485,6 +3497,20 @@ function renderMapShapes(whichmap, hash, attempts) {
               //map.removeLayer(overlays[layerName]);
               //layerControl[whichmap].removeOverlay(overlays[layerName]);
 
+              console.log("getOverlays");
+              console.log(layerControl[whichmap].getOverlays());
+              if (location.host.indexOf('localhost') >= 0) {
+                let layerString = "";
+                Object.keys(layerControl[whichmap].getOverlays()).forEach(key => {
+                  layerString += key;
+                  if (layerControl[whichmap].getOverlays()[key]) {
+                    layerString += " - selected";
+                  }
+                  layerString += "<br>";
+                });
+                $("#layerStringDiv").remove();
+                $("#locationFilterHolder").prepend("<div id='layerStringDiv' style='width:220px'>" + layerString + "<hr></div>");
+              }
             }
         }
 
