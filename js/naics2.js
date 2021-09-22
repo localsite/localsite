@@ -18,60 +18,60 @@ let industries = d3.map(); // Populated in promises by industryTitleFile
 //let industryTitleFile = local_app.community_data_root() + "us/state/" + stateAbbr + "/industries_state" + stateID + "_naics6_state_all.tsv";
 
 let industryTitleFile = "lookup/6-digit_2012_Codes.csv"; // Source: https://www.census.gov/eos/www/naics/downloadables/downloadables.html
-let industryLocDataFile = local_app.community_data_root() + "us/state/GA/naics/GA_data_filled.csv";
+let industryLocDataFile = getIndustryLocFileString(6);
 
 // TO DO: Initially 6-digit naics. Store naics when number changes to 2 and 4 digit to avoid reloading file.
 // TO DO: Put a promise on just the industries
-var promises = [
-    // GET 2 DATASETS
-	d3.csv(industryTitleFile, function(d) {
-	    industries.set(d.id, d.title);
-	    return d;
-	}),
-	d3.csv(industryLocDataFile)
-]
-Promise.all(promises).then(promisesReady);
-function promisesReady(values) { // Wait for 
+function callPromises(industryLocDataFile) {
+    let promises = [
+        // GET 2 DATASETS
+    	d3.csv(industryTitleFile, function(d) {
+    	    industries.set(d.id, d.title);
+    	    return d;
+    	}),
+    	d3.csv(industryLocDataFile)
+    ]
+    Promise.all(promises).then(promisesReady);
+    function promisesReady(values) { // Wait for 
 
-	localObject.industries = values[0]; // NAICS industry titles
+    	localObject.industries = values[0]; // NAICS industry titles
 
-	// TO DO: Append here for multiple states
-  	localObject.industryCounties = values[1]; // Exceeds 40,000
+    	// TO DO: Append here for multiple states
+      	localObject.industryCounties = values[1]; // Exceeds 40,000
 
-    // Add titles to 
+        // Add titles to 
 
-	//localObject.locList = makeRowValuesNumeric(data, dp.numColumns, dp.valueColumn);
-	  
-	// Make element key always lowercase
-	//dp.data_lowercase_key;
+    	//localObject.locList = makeRowValuesNumeric(data, dp.numColumns, dp.valueColumn);
+    	  
+    	// Make element key always lowercase
+    	//dp.data_lowercase_key;
 
-	//processOutput(dp,map,map2,whichmap,whichmap2,basemaps1,basemaps2,function(results){});
+    	//processOutput(dp,map,map2,whichmap,whichmap2,basemaps1,basemaps2,function(results){});
 
-    //alert(fips) // 13189,13025,13171
-    //fips = [13189,13025,13171]; // TEMP
-    //fips = ["US13189","US13025","US13171"];
+        //alert(fips) // 13189,13025,13171
+        //fips = [13189,13025,13171]; // TEMP
+        //fips = ["US13189","US13025","US13171"];
 
-    fips = [];
-    let hash = getHash();
-    if (hash.geo) {
-        fips = hash.geo.replace(/US/g,'').split(","); // Remove US from geo values to create array of fips.
+        fips = [];
+        let hash = getHash();
+        if (hash.geo) {
+            fips = hash.geo.replace(/US/g,'').split(","); // Remove US from geo values to create array of fips.
+        }
+
+        topRatesInFips(localObject, fips); // Renders header and processes county values
+
+    	console.log("localObject.industries length " + localObject.industries.length);
+    	console.log("localObject.industryCounties length " + localObject.industryCounties.length);
+
+    	// Returns Logging
+    	//alert(industries.get("113310"));
+
+        showIndustryTabulatorList(0);
+
+        // This code will be removed
+    	//displayIndustryList(localObject); 
     }
-    topRatesInFips(localObject, fips); // Renders header and processes county values
-
-	console.log("localObject.industries length " + localObject.industries.length);
-	console.log("localObject.industryCounties length " + localObject.industryCounties.length);
-
-	// Returns Logging
-	//alert(industries.get("113310"));
-
-    showIndustryTabulatorList(0);
-
-	displayIndustryList(localObject); 
 }
-
-document.addEventListener('hashChangeEvent', function (elem) {
-    refreshNaicsWidget();                    
-}, false);
 
 // INIT
 let priorHash_naicspage = {};
@@ -82,13 +82,74 @@ if (typeof hiddenhash == 'undefined') {
     let hiddenhash = {};
 }
 refreshNaicsWidget();
+document.addEventListener('hashChangeEvent', function (elem) {
+    refreshNaicsWidget();                    
+}, false);
+
+
+function getIndustryLocFileString(catsize) {
+    return local_app.community_data_root() + "industries/naics/US/country/US-2021-Q1-naics-" + catsize + "-digits.csv";
+}
 
 function refreshNaicsWidget() {
     //alert("refreshNaicsWidget")
     let hash = getHash(); // Includes hiddenhash
-    if (hash.geo != priorHash_naicspage.geo) {
-        //alert("hash.geo " + hash.geo);
-        showIndustryTabulatorList(0);
+    if (!hash.catsize) hash.catsize = 6;
+    let loadNAICS = false;
+    // The following will narrow the naics to the current location
+    if (hash.regiontitle != priorHash_naicspage.regiontitle) {
+        if (!hash.regiontitle) {
+            if(!hash.geo) {
+                
+            }
+        } else {
+            // BUGBUG - check the implications
+            hiddenhash.loctitle = hash.regiontitle;
+            $("#region_select").val(hash.regiontitle.replace(/\+/g," "));
+            hiddenhash.geo = $("#region_select option:selected").attr("geo");
+            hash.geo = hiddenhash.geo; // Used by naics.js
+        }
+        loadNAICS = true;
+    } else if (hash.state != priorHash_naicspage.state) {
+        // Initial load, if there is a state
+        console.log("hash.state change call loadIndustryData(hash)")
+        // Occurs on INIT
+        loadNAICS = true;
+    } else if (hash.show != priorHash_naicspage.show) {
+        loadNAICS = true;
+    } else if (hash.geo != priorHash_naicspage.geo) {
+        loadNAICS = true;
+    } else if ((hash.naics != priorHash_naicspage.naics) && hash.naics.indexOf(",") > 0) { // Skip if only one naics
+        loadNAICS = true;
+        //alert("test " + hash.naics.indexOf(","))
+    } else if (hash.catsize != priorHash_naicspage.catsize) {
+        loadNAICS = true;
+    } else if (hash.catsort != priorHash_naicspage.catsort) {
+        loadNAICS = true;
+    }
+
+
+    if (loadNAICS == true) {
+        if (hash.state && hash.naics && hash.naics.indexOf(",") < 0) { // Hide when viewing just 1 naics within a state.
+            $("#industryListHolder").hide();
+            $("#industryDetail").show();
+        } else {
+            $("#industryListHolder").show();
+            $("#industryDetail").hide();
+        }
+
+        let industryLocDataFile = getIndustryLocFileString(hash.catsize);
+        d3.csv(industryLocDataFile).then( function(county_data) {
+            //alert("load it " + hash.catsize);
+            //showIndustryTabulatorList(0);
+            callPromises(industryLocDataFile);
+        });
+
+        // This gets called from else where:
+        //displayIndustryList(localObject); 
+    } else {
+        $("#industryListHolder").hide();
+        $("#industryDetail").hide();
     }
     priorHash_naicspage = getHash();
 }
@@ -104,8 +165,8 @@ function displayIndustryList(localObject) {
         text += "<div class='cell'>" + localObject.industries[i].id + "</div>";
         text += "<div class='cell'><a href='#naics=" + localObject.industries[i].id + "' onClick='goHash({\"naics\":" + localObject.industries[i].id+ "}); return false;' style='white-space:nowrap'>" + localObject.industries[i].title + "</a></div>"
         //text += "<div class='cell-right'>" + localObject.industryCounties[i].FIPS + "</div>";
-        text += "<div class='cell-right'>" + localObject.industries[i].wages + "</div>";
-        text += "<div class='cell-right'>" + localObject.industries[i].firms + "</div>";
+        text += "<div class='cell-right'>" + localObject.industries[i].payroll + "</div>";
+        text += "<div class='cell-right'>" + localObject.industries[i].establishments + "</div>";
         text += "<div class='cell-right'>" + localObject.industries[i].employees + "</div>";
         text += "<div class='cell-right'>" + localObject.industries[i].population + "</div>";
         //text += "<div class='cell-right'>" + localObject.industries[i].aggregate + "</div>";
@@ -127,7 +188,6 @@ function showIndustryTabulatorList(attempts) {
         // For fixed header, also allows only visible rows to be loaded. See "Row Display Test" below.
         // maxHeight:"100%",
 
-
         // More filter samples
         // https://stackoverflow.com/questions/2722159/how-to-filter-object-array-based-on-attributes
         industrytable = new Tabulator("#tabulator-industrytable", {
@@ -147,8 +207,8 @@ function showIndustryTabulatorList(attempts) {
             columns:[
                 {title:"Naics", field:"id", width:80},
                 {title:"Industry", field:"title"},
-                {title:"Payroll", field:"wages", hozAlign:"right", width:120, headerSortStartingDir:"desc", sorter:"number", formatter:"money", formatterParams:{precision:false,symbol:"$"} },
-                {title:"Locations", field:"firms", hozAlign:"right", width:120, headerSortStartingDir:"desc", sorter:"number", formatter:"money", formatterParams:{precision:false} },
+                {title:"Payroll", field:"payroll", hozAlign:"right", width:120, headerSortStartingDir:"desc", sorter:"number", formatter:"money", formatterParams:{precision:false,symbol:"$"} },
+                {title:"Locations", field:"establishments", hozAlign:"right", width:120, headerSortStartingDir:"desc", sorter:"number", formatter:"money", formatterParams:{precision:false} },
                 {title:"Employees", field:"employees", hozAlign:"right", width:120, headerSortStartingDir:"desc", sorter:"number", formatter:"money", formatterParams:{precision:false} },
                 {title:"Population", field:"population", hozAlign:"right", width:120, headerSortStartingDir:"desc", sorter:"number", formatter:"money", formatterParams:{precision:false} },
                 {title:"Counties", field:"instances", hozAlign:"right", width:120, headerSortStartingDir:"desc", sorter:"number" },
@@ -157,6 +217,7 @@ function showIndustryTabulatorList(attempts) {
             dataLoaded: function(data) {
 
                 //var newDiv= document.createElement('div');
+                $("#totalcount").remove(); // Prevent dup - this will also remove events bound to the element.
                 var totalcount_div = Object.assign(document.createElement('div'),{id:"totalcount",style:"float:left"})
                 $("#tabulator-industrytable-count").append(totalcount_div);
 
@@ -298,12 +359,16 @@ function topRatesInFips(dataSet, fips) {
     // - Selected counties (fips)
 
     let catFilter = {
-        "payann": "Wages",
+        "payann": "Payroll",
         "emp": "Employees",
-        "estab": "Firms"
+        "estab": "Establishments"
     }
     //alert(catFilter['estab'])
 
+    // This code will be removed
+
+    // This code will be removed
+    /*
     // TABLE HEADER ROW
     //alert("statelength " + statelength + " fips.length: " + fips.length);
     // && statelength != fips.length
@@ -338,6 +403,7 @@ function topRatesInFips(dataSet, fips) {
     
     // Write header to browser
     $("#sector_list").prepend(text);
+    */
 
     let naicsFoundCount = 0;
     let naicsNotFoundCount = 0;
@@ -346,9 +412,9 @@ function topRatesInFips(dataSet, fips) {
         alert("clear prior industry list")
         for (var i=0; i < dataSet.industies.length; i++) {
 
-            delete dataSet.industies[i].firms;
+            delete dataSet.industies[i].establishments;
             delete dataSet.industies[i].employees; 
-            delete dataSet.industies[i].wages;
+            delete dataSet.industies[i].payroll;
             delete dataSet.industies[i].population;
             delete dataSet.industies[i].aggregate;
             delete dataSet.industies[i].instances;
@@ -365,16 +431,16 @@ function topRatesInFips(dataSet, fips) {
             let objIndex = dataSet.industries.findIndex((obj => obj.id == dataSet.industryCounties[i].NAICS));
             if (objIndex >= 0) {
                 if (dataSet.industries[objIndex].aggregate === undefined) { // Add new row
-                    dataSet.industries[objIndex].firms = +dataSet.industryCounties[i]['Firms'];
+                    dataSet.industries[objIndex].establishments = +dataSet.industryCounties[i]['Establishments'];
                     dataSet.industries[objIndex].employees = Number(dataSet.industryCounties[i]['Employees']); 
-                    dataSet.industries[objIndex].wages = Number(dataSet.industryCounties[i]['Wages']);
+                    dataSet.industries[objIndex].payroll = Number(dataSet.industryCounties[i]['Payroll']);
                     dataSet.industries[objIndex].population = Number(dataSet.industryCounties[i]['Population']);
                     dataSet.industries[objIndex].aggregate = Number(dataSet.industryCounties[i][catFilter['estab']]); // Set by dropdown
                     dataSet.industries[objIndex].instances = 1;
                 } else { // Add to existing row
-                    dataSet.industries[objIndex].firms = Number(dataSet.industries[objIndex].firms) + Number(dataSet.industryCounties[i]['Firms']);
+                    dataSet.industries[objIndex].establishments = Number(dataSet.industries[objIndex].establishments) + Number(dataSet.industryCounties[i]['Establishments']);
                     dataSet.industries[objIndex].employees = Number(dataSet.industries[objIndex].employees) + Number(dataSet.industryCounties[i]['Employees']);
-                    dataSet.industries[objIndex].wages = Number(dataSet.industries[objIndex].wages) + Number(dataSet.industryCounties[i]['Wages']);
+                    dataSet.industries[objIndex].payroll = Number(dataSet.industries[objIndex].payroll) + Number(dataSet.industryCounties[i]['Payroll']);
                     dataSet.industries[objIndex].population = Number(dataSet.industries[objIndex].population) + Number(dataSet.industryCounties[i]['Population']);
                     dataSet.industries[objIndex].aggregate = Number(dataSet.industries[objIndex].aggregate) + Number(dataSet.industryCounties[i][catFilter['estab']]); // Set by dropdown
                     dataSet.industries[objIndex].instances++;
@@ -384,9 +450,9 @@ function topRatesInFips(dataSet, fips) {
             } else { // An object with new rows to add
                 let appendIndex = appendIndustries.findIndex((obj => obj.id == dataSet.industryCounties[i].NAICS));
                 if (appendIndex >= 0) {
-                    appendIndustries[appendIndex].firms = +appendIndustries[appendIndex].firms + +dataSet.industryCounties[i]['Firms'];
+                    appendIndustries[appendIndex].establishments = +appendIndustries[appendIndex].establishments + +dataSet.industryCounties[i]['Establishments'];
                     appendIndustries[appendIndex].employees = +appendIndustries[appendIndex].employees + +dataSet.industryCounties[i]['Employees'];
-                    appendIndustries[appendIndex].wages = Number(appendIndustries[appendIndex].wages) + Number(dataSet.industryCounties[i]['Wages']);
+                    appendIndustries[appendIndex].payroll = Number(appendIndustries[appendIndex].payroll) + Number(dataSet.industryCounties[i]['Payroll']);
                     appendIndustries[appendIndex].population = Number(appendIndustries[appendIndex].population) + Number(dataSet.industryCounties[i]['Population']);
                     appendIndustries[appendIndex].aggregate = +appendIndustries[appendIndex].aggregate + +dataSet.industryCounties[i][catFilter['estab']]; // Set by dropdown
                     appendIndustries[appendIndex].instances++;
@@ -394,9 +460,9 @@ function topRatesInFips(dataSet, fips) {
                     let newIndustryRow = {};
                     newIndustryRow.id = dataSet.industryCounties[i]['NAICS'];
                     newIndustryRow.title = "NAICS " + dataSet.industryCounties[i]['NAICS'];
-                    newIndustryRow.firms = Number(dataSet.industryCounties[i]['Firms']);
+                    newIndustryRow.establishments = Number(dataSet.industryCounties[i]['Establishments']);
                     newIndustryRow.employees = Number(dataSet.industryCounties[i]['Employees']); 
-                    newIndustryRow.wages = Number(dataSet.industryCounties[i]['Wages']);
+                    newIndustryRow.payroll = Number(dataSet.industryCounties[i]['Payroll']);
                     newIndustryRow.population = Number(dataSet.industryCounties[i]['Population']);
                     newIndustryRow.aggregate = Number(dataSet.industryCounties[i][catFilter['estab']]);
                     newIndustryRow.instances = 1;
@@ -404,7 +470,7 @@ function topRatesInFips(dataSet, fips) {
                 }
                 ++naicsNotFoundCount;
             }
-            //dataSet.industries.id[dataSet.industryCounties[i].NAICS].aggregate = dataSet.industryCounties[i].firms;
+            //dataSet.industries.id[dataSet.industryCounties[i].NAICS].aggregate = dataSet.industryCounties[i].establishments;
             //alert(dataSet.industries.id[dataSet.industryCounties[i].NAICS].aggregate);
         }
 
@@ -422,10 +488,6 @@ function topRatesInFips(dataSet, fips) {
     console.log("dataSet.industries")
     console.log(dataSet.industries);
     return;
-
-
-
-
 
     for (var j = 0; j < fips.length; j++) { 
         
@@ -445,7 +507,6 @@ function topRatesInFips(dataSet, fips) {
             } else {
                     rateInFips = rateInFips+0
                     estim[j]=parseFloat(0)
-
             }
         }
     }
@@ -635,7 +696,7 @@ function topRatesInFipsOld(dataSet, fips) { // REMOVED , hash
                                     )
                                 }  else {
                                     localObject.industryCounties.push(
-                                        {'data_id': dataSet.industries[id], [which]: rateInFips,'NAICScode': naicscode, 'rank': i, 'Firms':rateArray,'Estimate':estim}
+                                        {'data_id': dataSet.industries[id], [which]: rateInFips,'NAICScode': naicscode, 'rank': i, 'Establishments':rateArray,'Estimate':estim}
                                     )
                                     top_data_ids.push(id)
                                 }
@@ -739,16 +800,16 @@ function topRatesInFipsOld(dataSet, fips) { // REMOVED , hash
                                         
                                         // The counties
                                         for (var j = 0; j < fips.length; j++) {
-                                            if(localObject.industries[i]['Firms'][j]){
+                                            if(localObject.industries[i]['Establishments'][j]){
                                                 if(localObject.industries[i]['Estimate'][j]){    
                                                     if(localObject.industries[i]['Estimate'][j]>0){
                                                         
-                                                        midCol += "<div class='cell-right'>" + dollar +"<a href='" + mapLink[j] + "' target='_blank'>"+'<span style="color: #9933aa" >'+ String((localObject.industries[i]['Firms'][j]/1000).toFixed(2)) + " million</span></a></div>";
+                                                        midCol += "<div class='cell-right'>" + dollar +"<a href='" + mapLink[j] + "' target='_blank'>"+'<span style="color: #9933aa" >'+ String((localObject.industries[i]['Establishments'][j]/1000).toFixed(2)) + " million</span></a></div>";
                                                     } else {
-                                                        midCol += "<div class='cell-right'>" + dollar +"<a href='" + mapLink[j] + "' target='_blank'>"+ String((localObject.industries[i]['Firms'][j]/1000).toFixed(2)) + " million</a></div>";
+                                                        midCol += "<div class='cell-right'>" + dollar +"<a href='" + mapLink[j] + "' target='_blank'>"+ String((localObject.industries[i]['Establishments'][j]/1000).toFixed(2)) + " million</a></div>";
                                                     }
                                                 } else {
-                                                    midCol += "<div class='cell-right'>" + dollar +"<a href='" + mapLink[j] + "' target='_blank'>"+ String((localObject.industries[i]['Firms'][j]/1000).toFixed(2)) + " million</a></div>";
+                                                    midCol += "<div class='cell-right'>" + dollar +"<a href='" + mapLink[j] + "' target='_blank'>"+ String((localObject.industries[i]['Establishments'][j]/1000).toFixed(2)) + " million</a></div>";
                                                 }
                                             } else {
                                                 midCol += "<div class='cell-right'>" + "<a href='" + mapLink[j] + "' target='_blank'>" + "0</a></div>";
@@ -758,9 +819,9 @@ function topRatesInFipsOld(dataSet, fips) { // REMOVED , hash
                                         rightCol += "<div class='cell-right'>" + dollar + String((localObject.industries[i][which]/1000).toFixed(2)) + " million</div>";
                                     } else {
                                         for (var j = 0; j<fips.length; j++){
-                                            if(localObject.industries[i]['Firms'][j]){
+                                            if(localObject.industries[i]['Establishments'][j]){
                                                 
-                                                    midCol += "<div class='cell-right'>" + dollar + String((localObject.industries[i]['Firms'][j]/1000000).toFixed(2)) + " million</div>";
+                                                    midCol += "<div class='cell-right'>" + dollar + String((localObject.industries[i]['Establishments'][j]/1000000).toFixed(2)) + " million</div>";
                                                 
                                             } else {
                                                     midCol +="<div class='cell-right'>" + "<a href='" + mapLink[j] + "' target='_blank'>" + "0</a></div>";
@@ -824,22 +885,22 @@ function topRatesInFipsOld(dataSet, fips) { // REMOVED , hash
                                     rightCol = ""
                                     midCol = ""
                                     for (var j = 0; j<fips.length; j++){
-                                        if(localObject.industries[i]['Firms'][j]){
+                                        if(localObject.industries[i]['Establishments'][j]){
 
                                             if(hash.catsort=="estab"){
-                                                midCol += "<div class='cell-right'><a href='" + mapLink[j] + "' target='_blank'>" + String(Math.round(localObject.industries[i]['Firms'][j])) + "</a></div>";
+                                                midCol += "<div class='cell-right'><a href='" + mapLink[j] + "' target='_blank'>" + String(Math.round(localObject.industries[i]['Establishments'][j])) + "</a></div>";
                                                 
                                             } else {
                                                 if(localObject.industries[i]['Estimate'][j]){    
                                                         if(localObject.industries[i]['Estimate'][j]>0){
-                                                            midCol += "<div class='cell-right'><a href='" + mapLink[j] + "' target='_blank'>" + '<span style="color: #9933aa" >'+String(Math.round(localObject.industries[i]['Firms'][j])) + "</span></a></div>";
+                                                            midCol += "<div class='cell-right'><a href='" + mapLink[j] + "' target='_blank'>" + '<span style="color: #9933aa" >'+String(Math.round(localObject.industries[i]['Establishments'][j])) + "</span></a></div>";
                                                 
                                                         } else {
-                                                            midCol += "<div class='cell-right'><a href='" + mapLink[j] + "' target='_blank'>" + String(Math.round(localObject.industries[i]['Firms'][j])) + "</a></div>";
+                                                            midCol += "<div class='cell-right'><a href='" + mapLink[j] + "' target='_blank'>" + String(Math.round(localObject.industries[i]['Establishments'][j])) + "</a></div>";
                                                 
                                                         }
                                                     } else {
-                                                        midCol += "<div class='cell-right'><a href='" + mapLink[j] + "' target='_blank'>" + String(Math.round(localObject.industries[i]['Firms'][j])) + "</a></div>";
+                                                        midCol += "<div class='cell-right'><a href='" + mapLink[j] + "' target='_blank'>" + String(Math.round(localObject.industries[i]['Establishments'][j])) + "</a></div>";
                                                 
                                                     }
                                             }
