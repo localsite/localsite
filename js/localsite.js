@@ -1,6 +1,6 @@
 // Updates originate in GitHub localsite/js/localsite.js
 // To do: dynamically add target _parent to external link when in an iFrame and no existing target.
-
+// To do: If community folder is not parallel, link to model.earth domain.
 
 // Localsite Path Library - A global namespace singleton
 // Define a new object if localsite library does not exist yet.
@@ -170,19 +170,13 @@ function loadParams(paramStr,hashStr) {
   // NOTE: Hardcoded to pull params from last script, else 'embed-map.js' only
   // Get Script - https://stackoverflow.com/questions/403967/how-may-i-reference-the-script-tag-that-loaded-the-currently-executing-script
   let scripts = document.getElementsByTagName('script'); 
-  let myScript = scripts[ scripts.length - 1 ]; // Last script on page, typically the current script localsite.js
-  //let myScript = null;
-
-  // This will be removed
-  //for (var i = 0; i < scripts.length; ++i) {
-  //    if(scripts[i].src && scripts[i].src.indexOf('embed-map.js') !== -1){
-  //      myScript = scripts[i];
-  //    }
-  //}
+  //let myScript = scripts[ scripts.length - 1 ]; // Last script on page, typically the current script localsite.js
+  let myScript = null;
 
   for (var i = 0; i < scripts.length; ++i) {
       if(scripts[i].src && scripts[i].src.indexOf('localsite.js') !== -1){
         myScript = scripts[i];
+        break;
       }
   }
 
@@ -255,13 +249,23 @@ function getHashOnly() {
       return b;
     })(window.location.hash.substr(1).split('&'));
 }
-function updateHash(addToHash, addToExisting) { // Avoids triggering hash change event.
+function updateHash(addToHash, addToExisting, removeFromHash) { // Avoids triggering hash change event.
     let hash = {}; // Limited to this function
     if (addToExisting != false) {
       hash = getHashOnly(); // Include all existing. Excludes hiddenhash.
     }
     hash = mix(addToHash,hash); // Gives priority to addToHash
 
+    if (removeFromHash) {
+      if (typeof removeFromHash == "string") {
+        removeFromHash = removeFromHash.split(",");
+      }
+      for(var i = 0; i < removeFromHash.length; i++) {
+          delete hash[removeFromHash[i]];
+          delete hiddenhash[removeFromHash[i]];
+      }
+    }
+    
     var hashString = decodeURIComponent($.param(hash)); // decode to display commas in URL
     var pathname = window.location.pathname.replace(/\/\//g, '\/')
     var queryString = "";
@@ -274,10 +278,10 @@ function updateHash(addToHash, addToExisting) { // Avoids triggering hash change
     let searchTitle = 'Page ' + hashString;
     window.history.pushState("", searchTitle, pathname + queryString);
 }
-function goHash(addToHash) {
+function goHash(addToHash,removeFromHash) {
   consoleLog("goHash ")
   consoleLog(addToHash)
-  updateHash(addToHash);
+  updateHash(addToHash,true,removeFromHash); // true = Include all of existing hash
   triggerHashChangeEvent();
 }
 function go(addToHash) {
@@ -552,7 +556,7 @@ loadScript(theroot + 'js/jquery.min.js', function(results) {
           $("#bodyFile").load(bodyFile, function( response, status, xhr ) {
             consoleLog("Template Loaded: " + bodyFile);
             if (typeof relocatedStateMenu != "undefined") {
-              relocatedStateMenu.appendChild(state_select); // For apps/beyondcarbon
+              relocatedStateMenu.appendChild(state_select); // For apps hero
               $(".stateFilters").hide();
             }
             if (param.showstates != "false") {
@@ -1258,7 +1262,9 @@ addEventListener("load", function(){
     var anchor = getParentAnchor(e.target);
     if(anchor !== null) {
       //$('#log_display').hide();
-      document.getElementById("log_display").style.display = 'none';
+      if (document.getElementById("log_display").length >= 0) {
+        document.getElementById("log_display").style.display = 'none';
+      }
     }
   }, false);
 });
