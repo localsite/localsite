@@ -8,12 +8,13 @@ We process NAICS industry data into [state files with county employment levels](
 **Our NAICS pipeline**
 1. [Generate state county files](https://github.com/modelearth/community-data) for 2 to 6 digit NAICS industries for static hosting on Github.  
 To avoid gaps in county industry data, we'll use this [2018 data from Eckert](https://github.com/modelearth/community-data/tree/master/process/cbp).  
-3. Compare with output from our [Machine Learning script](https://github.com/modelearth/machine-learning) created by John Taylor.  
-4. Our [comparison report](../../info/naics/) will be a new version of our [EPA Local Industries Impact Report](../../info/).  
+2. Compare with output from our [Machine Learning script](https://github.com/modelearth/machine-learning) created by John Taylor.  
+3. Our **[new comparison report](../../info/naics/)** will be a new version of our [EPA Local Industries Impact Report](../../info/).  
+4. We're also working with [Commodity Flow Survey (CFS)](https://github.com/modelearth/commodity-flow-survey) NAICS data.
 
 Data source: US Bureau of Labor Statistics (BLS)
 Our older links: [Industries by county](https://github.com/modelearth/community-data/tree/master/us/state) | [Industries by zipcode](../../../community/industries/)  
-[Samples of Merging Input-Output Data for Totals](totals)
+[Samples of Merging Input-Output Data for Totals](totals) | [WebStorm Notes](https://docs.google.com/document/d/1BKxx5Q5rtNgZ9cD-Hsgdi_nEL1YPCfPhKjbnIqMgCRI/edit?usp=sharing)
 
 <!--
 [Embeddable IO Widgets](../../charts) use the [static JSON files](https://github.com/modelearth/io/tree/main/build/api) output from the [USEEIO API](https://github.com/USEPA/USEEIO_API/wiki).
@@ -117,7 +118,7 @@ View our [Flowsa Python scripts](flowsa)
 
 [Impact Charts](../../../io/charts/) - US Environmentally-Extended Input-Output (USEEIO) - Goods and Services 
 
-[Impact Labels](../../../io/template/) - Using Environmental Product Declarations (EPDs)
+[Impact Profiles](../../../io/template/) - Using Environmental Product Declarations (EPDs)
 
 
 ####Data Sources and Prep

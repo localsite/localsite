@@ -1500,16 +1500,26 @@ function SearchProductCodes(event1) {
 
 
 function changeCat(catTitle) {
-	catTitle = catTitle.replace(/_/g, ' ');
-	$('#catSearch').val(catTitle);
+    if (catTitle) {
+        //alert("changeCat catTitle: " + catTitle);
+    	catTitle = catTitle.replace(/_/g, ' ');
+        //alert("changeCat catTitle: " + catTitle);
+    }
+    $('#catSearch').val(catTitle);
 
 	$('#items').prop("checked", true); // Add front to parameter name.
 
 	$('#industryCatList > div').removeClass('catListSelected');
 
+    // Older lists in index.html
 	$('.catList > div').filter(function(){
 	    return $(this).text() === catTitle
 	}).addClass('catListSelected');
+
+    // Side nav with title attribut
+    $('.catList > div').filter(function(){
+        return $(this).attr("title") === catTitle
+    }).addClass('catListSelected');
 
 	$("#topPanel").hide();
 	$('#catListHolderShow').text('Product Categories');
@@ -1559,13 +1569,12 @@ $(document).ready(function () {
 
   $('#catListClone').html($('#industryCatList').clone());
 
-
-  $('.catList > div').click(function () {
+  $(document).on("click", ".catList > div", function(event) {
     var catTitle = $(this).text();
-    //$('#keywordsTB').val(catTitle); // Temp
-    changeCat(catTitle);
-
-    var catString = catTitle.replace(/ /g, '_');
+    if ($(this).attr("title")) {
+        catTitle = $(this).attr("title");
+    }
+    var catString = catTitle.replace(/ /g, '_').replace(/&/g, '%26');
     $("#bigThumbPanelHolder").hide();
     console.log("catList triggers update");
     goHash({"cat":catString}); // Let the hash change trigger updates
@@ -1775,7 +1784,7 @@ function displayBigThumbnails(activeLayer, layerName,siteObject) {
 	        if (bigThumbSection == "main") {
 	            if (thelayers[layer].menulevel == "1") {
 	                if (access(currentAccess,menuaccess)) {
-	                    //if (siteObject.items[layer].section == bigThumbSection && siteObject.items[layer].showthumb != '0' && bigThumbSection.replace(" ","-").toLowerCase() != thelayers[layer].item) {
+	                    //if (siteObject.items[layer].section == bigThumbSection && siteObject.items[layer].showthumb != '0' && bigThumbSection.replace(/ /g,"-").toLowerCase() != thelayers[layer].item) {
 	                    
 	                        var thumbTitle = ( thelayers[layer].thumbtitle ? thelayers[layer].thumbtitle : (thelayers[layer].section ? thelayers[layer].section : thelayers[layer].primarytitle));
 	                        var thumbTitleSecondary = (thelayers[layer].thumbTitleSecondary ? thelayers[layer].thumbTitleSecondary : '&nbsp;');
@@ -1832,7 +1841,7 @@ function displayBigThumbnails(activeLayer, layerName,siteObject) {
 	            }
 	        } else {
 	            if (access(currentAccess,menuaccess)) {
-	                if (siteObject.items[layer].section == bigThumbSection && siteObject.items[layer].showthumb != '0' && bigThumbSection.replace(" ","-").toLowerCase() != thelayers[layer].item) {
+	                if (siteObject.items[layer].section == bigThumbSection && siteObject.items[layer].showthumb != '0' && bigThumbSection.replace(/ /g,"-").toLowerCase() != thelayers[layer].item) {
 	                    var thumbTitle = (thelayers[layer].navtitle ? thelayers[layer].navtitle : thelayers[layer].title);
 	                    var thumbTitleSecondary = (thelayers[layer].thumbTitleSecondary ? thelayers[layer].thumbTitleSecondary : '&nbsp;');
 
@@ -1964,7 +1973,7 @@ function initSiteObject(layerName) {
 
 	    //var layerJson = local_app.community_data_root() + "us/state/GA/ga-layers.json"; // CORS prevents live
 	    // The URL above is outdated. Now resides here:
-	    var layerJson = local_app.localsite_root() + "info/data/ga-layers.json";
+	    let layerJson = local_app.localsite_root() + "info/data/ga-layers.json";
         //alert("layerJson " + layerJson)
 	    if(location.host.indexOf("georgia") >= 0) {
 	    	// For PPE, since localhost folder does not reside on same server
@@ -1972,8 +1981,8 @@ function initSiteObject(layerName) {
 	    	console.log("Set layerJson: " + layerJson);
 		}
 	    console.log(layerJson);
-	    var siteObject = (function() {
-	        var json = null;
+	    let siteObject = (function() {
+	        let json = null;
 	        $.ajax({
 	            'type': 'GET',
 	            'async': true,
@@ -2038,7 +2047,7 @@ function initSiteObject(layerName) {
 	                return siteObject;
 	            },
 	          error: function (req, status, err) {
-	              consoleLog('Error fetching siteObject json: ', status, err);
+	              consoleLog('Error fetching siteObject json: ', err);
 	          }
 	        });
 	    })(); // end siteObject

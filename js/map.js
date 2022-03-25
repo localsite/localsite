@@ -2,7 +2,6 @@
 
 // INIT
 var dataParameters = [];
-var dp = {};
 var layerControl = {}; // Object containing one control for each map on page.
 if(typeof hash === 'undefined') {
   // Need to figure out where already declared.
@@ -187,7 +186,7 @@ function loadFromSheet(whichmap,whichmap2,dp,basemaps1,basemaps2,attempts,callba
   defaults.zoom = 7;
   defaults.numColumns = ["zip","lat","lon"];
   defaults.nameColumn = "name";
-  defaults.valueColumn = "name"; // For color coding
+  //defaults.valueColumn = "name"; // For color coding - Avoid because this invokes side legend
   defaults.latColumn = "latitude";
   defaults.lonColumn = "longitude";
   //defaults.scaleType = "scaleQuantile";
@@ -199,9 +198,9 @@ function loadFromSheet(whichmap,whichmap2,dp,basemaps1,basemaps2,attempts,callba
     mapCenter = [33.74,-84.38]; // Some center is always needed, else error will occur when first using flyTo.
   }
 
-  // Make all keys lowercase - add more here, good to loop through array of possible keeys
+  // Make all keys lowercase - add more here, good to loop through array of possible keys
   if (dp.itemsColumn) {
-    dp.itemsColumn = dp.itemsColumn.toLowerCase();
+    //dp.itemsColumn = dp.itemsColumn.toLowerCase(); // Prevented match with ElementRaw
   }
 
   if (dp.dataTitle) {
@@ -419,9 +418,33 @@ function loadFromSheet(whichmap,whichmap2,dp,basemaps1,basemaps2,attempts,callba
           //console.log("To do: store data in browser to avoid repeat loading from CSV.");
 
           dp.data = makeRowValuesNumeric(data, dp.numColumns, dp.valueColumn);
-          
+
+        
           // Make element key always lowercase
           //dp.data_lowercase_key;
+
+          //alert("okay1")
+          // TO DO - Need to verify this is needed, and where.
+          // Convert all keys to lowercase
+          /*
+          // THIS BREAKS FARMFRESH, was never deployed, keys are already entered as lowercase
+          for (var i = 0, l = dp.data.length; i < l; i++) {
+            var key, keys = Object.keys(dp.data[i]);
+            var n = keys.length;
+            //var newobj={}
+            dp.data[i] = {};
+            while (n--) {
+              key = keys[n];
+              //if (key.toLowerCase() != key) {
+                dp.data[i][key.toLowerCase()] = dp.data[i][key];
+                //dp.data[i][key] = null;
+              //}
+            }
+            //console.log("TEST dp.data[i]");
+            //console.log(dp.data[i]);
+          }
+          */
+
 
           processOutput(dp,map,map2,whichmap,whichmap2,basemaps1,basemaps2,function(results){});
       })
@@ -513,7 +536,13 @@ function processOutput(dp,map,map2,whichmap,whichmap2,basemaps1,basemaps2,callba
   // ADD BACKGROUND BASEMAP to Side Map
   if (layerControl[whichmap2] == undefined) {
     layerControl[whichmap2] = L.control.layers(basemaps2, overlays2).addTo(map2); // Init layer checkboxes
-    basemaps2["OpenStreetMap"].addTo(map2); // Set the initial baselayer.
+    if (location.host.indexOf('localhost') >= 0) {
+      // OpenStreetMap tiles stopped working on localhost in March of 2022. Using Grayscale locally for small map instead.
+      // "Access denied. See https://operations.osmfoundation.org/policies/tiles/"
+      basemaps2["Grayscale"].addTo(map2); // Set the initial baselayer.
+    } else {
+      basemaps2["OpenStreetMap"].addTo(map2); // Set the initial baselayer.
+    }
   } else {
     layerControl[whichmap2].addOverlay(dp.group2, dp.dataTitle); // Add layer checkbox
   }
@@ -758,8 +787,8 @@ function addIcons(dp,map,map2) {
   var iconColor, iconColorRGB, iconName;
   var colorScale = dp.scale;
   let hash = getHash();
+
   dp.data.forEach(function(element) {
-    
     // Add a lowercase instance of each column name
     var key, keys = Object.keys(element);
     var n = keys.length;
@@ -769,10 +798,22 @@ function addIcons(dp,map,map2) {
       element[key.toLowerCase()] = element[key];
     }
 
-    iconColor = colorScale(element[dp.valueColumn]);
-    if (dp.color) { 
+    if (dp.color) {
       iconColor = dp.color;
+    } else if (dp.colorColumn) {
+      iconColor = colorScale(element[dp.colorColumn]);
+    } else if (dp.valueColumn) {
+      // If the valueColumn = type, the item column my be filtered. For PPE the item contains multiple types.
+
+      //console.log("dp.valueColumn: " + dp.valueColumn);
+      //console.log("dp.valueColumn value: " + element[dp.valueColumn]);
+      //console.log("dp.valueColumn value Type: " + element["Type"]);
+      //console.log("dp.valueColumn value Category: " + element["Category"]);
+      iconColor = colorScale(element[dp.valueColumn]);
+    } else {
+      iconColor = "blue";
     }
+    
 
     //console.log("element state " + element.state + " iconColor: " + iconColor)
     if (typeof dp.latColumn == "undefined") {
@@ -814,7 +855,6 @@ function addIcons(dp,map,map2) {
       element[dp.latColumn] = element[dp.latColumn.split(".")[0]][dp.latColumn.split(".")[1]];
       element[dp.lonColumn] = element[dp.lonColumn.split(".")[0]][dp.lonColumn.split(".")[1]];
     }
-
     if (!element[dp.latColumn] || !element[dp.lonColumn]) {
       console.log("Missing lat/lon: " + name);
       return;
@@ -902,6 +942,9 @@ function addIcons(dp,map,map2) {
       } else if (element[dp.valueColumn] != element.name) {
         output += element[dp.valueColumn].replace(/,/g,", ") + "<br>";
       }
+    }
+    if (element[dp.showKeys]) {
+      output += "<b>" + dp.showLabels + ":</b> " + element[dp.showKeys] + "<br>";
     }
     if (element.schedule) {
       output += "Hours: " + element.schedule + "<br>";
@@ -1072,9 +1115,9 @@ function addIcons(dp,map,map2) {
     }
   );
   $('.showItemMenu').click(function () {
-    $("#itemMenu").show();
+    $("#listingMenu").show();
 
-    $("#itemMenu").prependTo($(this).parent());
+    $("#listingMenu").prependTo($(this).parent());
 
     event.stopPropagation();
     //$("#map").show();
@@ -1098,10 +1141,12 @@ function markerRadius(radiusValue,map) {
   // Standard radiusValue = 1
   let mapZoom = map.getZoom();
   let smallerWhenClose = 30;
-  if (mapZoom >= 5) { smallerWhenClose = 20};
-  if (mapZoom >= 8) { smallerWhenClose = 15};
-  if (mapZoom >= 9) { smallerWhenClose = 10};
-  if (mapZoom >= 10) { smallerWhenClose = 4};
+  if (mapZoom >= 4) { smallerWhenClose = 10};
+  if (mapZoom >= 5) { smallerWhenClose = 9};
+  if (mapZoom >= 6) { smallerWhenClose = 8.5};
+  if (mapZoom >= 8) { smallerWhenClose = 6};
+  if (mapZoom >= 9) { smallerWhenClose = 3};
+  if (mapZoom >= 10) { smallerWhenClose = 2};
   if (mapZoom >= 11) { smallerWhenClose = 1.8};
   if (mapZoom >= 12) { smallerWhenClose = 1.4};
   if (mapZoom >= 13) { smallerWhenClose = 1};
@@ -1110,7 +1155,10 @@ function markerRadius(radiusValue,map) {
   if (mapZoom >= 17) { smallerWhenClose = .3};
   if (mapZoom >= 18) { smallerWhenClose = .2};
   if (mapZoom >= 20) { smallerWhenClose = .1};
-  let radiusOut = (radiusValue * 2000) / mapZoom * smallerWhenClose;
+  if ($(window).width() < 600) {
+    smallerWhenClose = smallerWhenClose * 3; // Larger dots for clicking on mobile
+  }
+  let radiusOut = ((radiusValue * 2000) / mapZoom) * smallerWhenClose;
 
   //console.log("mapZoom:" + mapZoom + " radiusValu:" + radiusValue + " radiusOut:" + radiusOut);
   return radiusOut;
@@ -1160,7 +1208,9 @@ function loadMap1(calledBy, show, dp_incoming) { // Called by this page. Maybe s
   if (show != showprevious) {
     //changeCat(""); // Clear side
     $("#topPanel").hide();
-    clearHash("cat");
+    if (showprevious) {
+      clearHash("cat");
+    }
     //$("#tableSide").hide();
   }
   //$("#list_main").hide(); // Hide list and map2 until displayed by state-specific data
@@ -1173,7 +1223,7 @@ function loadMap1(calledBy, show, dp_incoming) { // Called by this page. Maybe s
     //'Grayscale' : L.tileLayer(mbUrl, {id: 'mapbox.light', attribution: mbAttr}), // No longer works, may require registration change.
     // OpenStreetMap_BlackAndWhite:
       'Grayscale' : L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-          maxZoom: 18, attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+          maxZoom: 18, attribution: '<a href="https://neighborhood.org">Neighborhood.org</a> | <a href="http://openstreetmap.org">OpenStreetMap</a> | <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
       }),
 
     // https://github.com/CartoDB/basemap-styles
@@ -1186,18 +1236,18 @@ function loadMap1(calledBy, show, dp_incoming) { // Called by this page. Maybe s
     'Satellite' : L.tileLayer(mbUrl, {maxZoom: 25, id: 'mapbox.satellite', attribution: mbAttr}),
     //'Streets' : L.tileLayer(mbUrl, {id: 'mapbox.streets',   attribution: mbAttr}),
     'OpenStreetMap' : L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19, attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+        maxZoom: 19, attribution: '<a href="https://neighborhood.org">Neighborhood.org</a> | <a href="http://openstreetmap.org">OpenStreetMap</a> | <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
     }),
   }
   var basemaps2 = {
     //'Grayscale' : L.tileLayer(mbUrl, {id: 'mapbox.light', attribution: mbAttr}),
     'Grayscale' : L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-          maxZoom: 18, attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+          maxZoom: 18, attribution: '<a href="https://neighborhood.org">Neighborhood.org</a> | <a href="http://openstreetmap.org">OpenStreetMap</a> | <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
       }),
     'Satellite' : L.tileLayer(mbUrl, {maxZoom: 25, id: 'mapbox.satellite', attribution: mbAttr}),
     //'Streets' : L.tileLayer(mbUrl, {id: 'mapbox.streets',   attribution: mbAttr}),
     'OpenStreetMap' : L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19, attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+        maxZoom: 19, attribution: '<a href="https://neighborhood.org">Neighborhood.org</a> | <a href="http://openstreetmap.org">OpenStreetMap</a> | <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
     }),
   }
   var baselayers = {
@@ -1276,7 +1326,8 @@ function loadMap1(calledBy, show, dp_incoming) { // Called by this page. Maybe s
 
   // Temp - until widget includes local industry lists
   if((show == "industries" || show == "parts" || show == "vehicles" || show == "bioeconomy") && location.href.indexOf('/info') == -1) {
-    location.href = "/localsite/info/" + location.hash;
+    ////location.href = "/localsite/info/" + location.hash;
+    //location.href = "/localsite/info/#show=" + show;
   }
 
   if (show == "beyondcarbon") {
@@ -1290,24 +1341,24 @@ function loadMap1(calledBy, show, dp_incoming) { // Called by this page. Maybe s
     dp.listTitle = "USDA Farm Produce";
     //if (location.host.indexOf('localhost') >= 0) {
       dp.valueColumn = "type";
-      dp.valueColumnLabel = "Type"; // was: Prepared Food
-      //dp.dataset = "../../../community/farmfresh/scraper/out/states/ga/markets.csv";
+      dp.valueColumnLabel = "Type";
       dp.dataset = "https://model.earth/community-data/us/state/" + state_abbreviation.toUpperCase() + "/" + state_abbreviation.toLowerCase() + "-farmfresh.csv";
     //} else {
     //  // Older data
     //  dp.valueColumn = "Prepared";
     //  dp.dataset = local_app.custom_data_root()  + "farmfresh/farmersmarkets-" + state_abbreviation + ".csv";
     //}
-    dp.name = "Local Farms"; // To remove
+    //dp.name = "Local Farms"; // To remove
     dp.dataTitle = "Farm Fresh Produce";
 
     dp.markerType = "google"; // BUGBUG doesn't seem to work with county boundary background (showShapeMap)
     //dp.showShapeMap = true;
 
     dp.search = {"In Market Name": "MarketName","In County": "County","In City": "city","In Street": "street","In Zip": "zip","In Website": "Website"};
-    dp.nameColumn = "marketname";
-    dp.titleColumn = "marketname";
-    dp.searchFields = "marketname";
+    // These were marketname
+    dp.nameColumn = "name";
+    dp.titleColumn = "name";
+    dp.searchFields = "name";
     dp.addressColumn = "street";
     //dp.latColumn = "latitude";
     //dp.lonColumn = "longitude";
@@ -1385,18 +1436,56 @@ function loadMap1(calledBy, show, dp_incoming) { // Called by this page. Maybe s
         dp.valueColumn = "Category1";
         dp.valueColumnLabel = "Type";
         dp.listInfo = "<a href='https://docs.google.com/spreadsheets/d/1bvD9meJgMqLywdoiGwe3f93sw1IVI_ZRjWSuCLSebZo/edit?usp=sharing'>Update Google Sheet</a>.";
-          dp.search = {"In Dataset Name": "name", "In Type": "Category1", "In Website URL": "website"};
+        dp.search = {"In Dataset Name": "name", "In Type": "Category1", "In Website URL": "website"};
               
       } else if (show == "360") {
         dp.listTitle = "Birdseye Views";
         //  https://model.earth/community-data/us/state/GA/VirtualTourSites.csv
         dp.dataset =  local_app.custom_data_root() + "360/GeorgiaPowerSites.csv";
 
+      } else if (show == "dmap") {
+        dp.listTitle = "Georgia Map";
+        dp.googleCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRPe-t3GBhimUV6JN62lLmtpZ5XsmLDXPusjOfrJ-_tW7BZlVrvcVT4oLFXtAtRX79WSAgVQe9zK2Ik/pub?gid=0&single=true&output=csv";
+        
+        dp.nameColumn = "recipient_name";
+        dp.titleColumn = "recipient_name";
+        dp.searchFields = "recipient_name";
+        dp.addressColumn = "address";
+
+        //dp.valueColumn = "naics";
+        dp.valueColumn = "naics description";
+        //dp.valueColumnLabel = "2-digit NAICS";
+
+        dp.showKeys = "naics description";
+        dp.showLabels = "Industry";
+        dp.search = {"In Company Name": "recipient_name", "In naics description": "naics description", "In Address" : "address"};
+        dp.itemsColumn = "NAICS Description"; // The column being search
+
+      } else if (show == "recyclers" || show == "secret") { // Remove "secret"
+        dp.listTitle = "Georgia Commercial Recyclers";
+        dp.googleCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRBRXb005Plt3mmmJunBMk6IejMu-VAJOPdlHWXUpyecTAF-SK4OpfSjPHNMN_KAePShbNsiOo2hZzt/pub?gid=1924677788&single=true&output=csv";
+
+        dp.nameColumn = "organization name";
+        dp.titleColumn = "organization name";
+        dp.searchFields = "organization name";
+        dp.addressColumn = "address";
+
+        dp.valueColumn = "category";
+        dp.valueColumnLabel = "Materials Category";
+
+        //dp.itemsColumn = "materials accepted"; // Equivalent to PPE items column, checkboxes
+        dp.itemsColumn = "Category"; // Needs to remain capitalized
+
+        // https://map.georgia.org/recycling/
+        dp.editLink = "https://docs.google.com/spreadsheets/d/1YmfBPEFpfmaKmxcnxijPU8-esVkhaVBE1wLZqPNOKtY/edit?usp=sharing";
+        dp.listInfo = "<br><br>View additional <a href='../map/recycling/ga/'>recycling datasets</a>.<br>Submit updates using our <a href='https://map.georgia.org/recycling/'>Google Form</a> or post comments in our <a href='https://docs.google.com/spreadsheets/d/1YmfBPEFpfmaKmxcnxijPU8-esVkhaVBE1wLZqPNOKtY/edit?usp=sharing' target='georgia_recyclers_sheet'>Google Sheet</a>.";
+        dp.search = {"In Location Name": "organization name", "In Address": "address", "In County Name": "county", "In Website URL": "website"};
+
       } else if (1==2 && (show == "recycling" || show == "transfer" || show == "recyclers" || show == "inert" || show == "landfills")) { // recycling-processors
         if (!hash.state || hash.state == "GA") {
           dp.editLink = "https://docs.google.com/spreadsheets/d/1YmfBPEFpfmaKmxcnxijPU8-esVkhaVBE1wLZqPNOKtY/edit?usp=sharing";
           //dp.googleDocID = "1YmfBPEFpfmaKmxcnxijPU8-esVkhaVBE1wLZqPNOKtY";
-          dp.googleCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRBRXb005Plt3mmmJunBMk6IejMu-VAJOPdlHWXUpyecTAF-SK4OpfSjPHNMN_KAePShbNsiOo2hZzt/pub?gid=688547633&single=true&output=csv";
+          dp.googleCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRBRXb005Plt3mmmJunBMk6IejMu-VAJOPdlHWXUpyecTAF-SK4OpfSjPHNMN_KAePShbNsiOo2hZzt/pub?gid=1924677788&single=true&output=csv";
           if (show == "transfer") {
             dp.listTitle = "Georgia Transfer Stations";
             dp.sheetName = "Transfer Stations";
@@ -1418,17 +1507,15 @@ function loadMap1(calledBy, show, dp_incoming) { // Called by this page. Maybe s
             dp.valueColumn = "sector"; // Bug - need to support uppercase too.
             dp.valueColumnLabel = "Sector";
           } else {
-
-            // Not working
-            dp.nameColumn = "Organization Name";
-            dp.titleColumn = "Organization Name";
-
             dp.listTitle = "Georgia Recycling Processors";
             dp.sheetName = "Recycling Processors";
             dp.valueColumn = "category";
             dp.valueColumnLabel = "Materials Category";
           }
-          dp.nameColumn = "company";
+          // May need to add here
+          //dp.nameColumn = "organizationname";
+          //dp.titleColumn = "organizationname";
+
           dp.listInfo = "<br><br>View additional <a href='../map/recycling/ga/'>recycling datasets</a>.<br>Submit updates by posting comments in our 5 <a href='https://docs.google.com/spreadsheets/d/1YmfBPEFpfmaKmxcnxijPU8-esVkhaVBE1wLZqPNOKtY/edit?usp=sharing'>Google Sheet Tabs</a>.";
           
           //dp.latColumn = "latitude";
@@ -1440,12 +1527,24 @@ function loadMap1(calledBy, show, dp_incoming) { // Called by this page. Maybe s
         if (show == "ev") {
           dp.listTitle = "Electric Vehicle Manufacturing";
         }
+        // Is this in use?
         dp.editLink = "https://docs.google.com/spreadsheets/d/1OX8TsLby-Ddn8WHa7yLKNpEERYN_RlScMrC0sbnT1Zs/edit?usp=sharing";
         //dp.googleDocID = "1OX8TsLby-Ddn8WHa7yLKNpEERYN_RlScMrC0sbnT1Zs";
+
+        //https://docs.google.com/spreadsheets/d/e/2PACX-1vSEbtuDxqld2wdlFqUh23MQl-BO7faEm1DGSkgJ4A5wNqkK5TOj82bkIjtRsOWx5yAThbcC6IsxPzYV/pubhtml
+        //dp.googleCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRBRXb005Plt3mmmJunBMk6IejMu-VAJOPdlHWXUpyecTAF-SK4OpfSjPHNMN_KAePShbNsiOo2hZzt/pub?gid=1924677788&single=true&output=csv";
+        dp.googleCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSEbtuDxqld2wdlFqUh23MQl-BO7faEm1DGSkgJ4A5wNqkK5TOj82bkIjtRsOWx5yAThbcC6IsxPzYV/pub?gid=0&single=true&output=csv";
+
+        // Not sure if any of these are needed.
         dp.sheetName = "Automotive";
-        dp.dataset = "https://model.earth/georgia-data/automotive/automotive.csv";
+        dp.nameColumn = "name";
+        dp.latColumn = "latitude";
+        dp.lonColumn = "longitude";
+
+        // Temp, prior to change from Google API 2 to 3
+        //dp.dataset = "https://model.earth/georgia-data/automotive/automotive.csv";
         dp.datastates = "GA";
-        dp.listInfo = "<br><br>Dark green map points indicate electric vehicle parts manufacturing.<br>Post comments in our <a href='https://docs.google.com/spreadsheets/d/1OX8TsLby-Ddn8WHa7yLKNpEERYN_RlScMrC0sbnT1Zs/edit?usp=sharing'>Google Sheet</a> to submit updates. Learn about <a href='../../community/projects/mobility/'>data sources</a>.";
+        //dp.listInfo = "<br><br>Dark green map points indicate electric vehicle parts manufacturing.<br>Post comments in our <a href='https://docs.google.com/spreadsheets/d/1OX8TsLby-Ddn8WHa7yLKNpEERYN_RlScMrC0sbnT1Zs/edit?usp=sharing'>Google Sheet</a> to submit updates. Learn about <a href='../../community/projects/mobility/'>data sources</a>.";
         dp.valueColumn = "ev industry";
         dp.valueColumnLabel = "EV Industry";
         dp.markerType = "google";
@@ -1467,7 +1566,7 @@ function loadMap1(calledBy, show, dp_incoming) { // Called by this page. Maybe s
         dp.countyColumn = "county";
         dp.itemsColumn = "Category1";
       } else if (show == "smart") { // param["data"] for legacy: https://www.georgia.org/smart-mobility
-        dp.dataTitle = "Smart Data Projects";
+        dp.dataTitle = "Smart and Sustainable";
         dp.listTitle = "Data Driven Decision Making";
         //dp.listSubtitle = "Smart & Sustainable Movement of Goods & Services";
         dp.industryListTitle = "Mobility Tech";
@@ -1482,6 +1581,7 @@ function loadMap1(calledBy, show, dp_incoming) { // Called by this page. Maybe s
         dp.latitude = 32.8;
         dp.longitude = -83.4;
         dp.zoom = 7;
+        dp.colorColumn = "name"; // Invokes color as alternative to valueColumn
       } else if (show == "logistics") { // "http://" + param["domain"]
 
         dp.listTitle = "Logistics";
@@ -1526,7 +1626,7 @@ function loadMap1(calledBy, show, dp_incoming) { // Called by this page. Maybe s
         dp.itemsColumn = "items";
         dp.valueColumn = "type";
         dp.valueColumnLabel = "Type";
-        dp.color = "#ff9819"; // orange
+        dp.color = "#ff9819"; // orange - Since there is no type column. An item column is filtered.
         dp.markerType = "google";
         dp.search = {"In Company Name": "company", "In Items": "items", "In Website URL": "website", "In City Name": "city", "In Zip Code" : "zip"};
         dp.nameColumn = "company";
@@ -1870,7 +1970,9 @@ function showList(dp,map) {
   console.log("Call showList for " + dp.dataTitle + " list")
   var iconColor, iconColorRGB;
   var colorScale = dp.scale;
-  let count = 0;
+  let count = 0
+  let countDisplay = 0;
+  let validRowCount = 0;
   let showCount = 0;
 
   var productMatchFound = 0;
@@ -1890,6 +1992,8 @@ function showList(dp,map) {
   if (dp.listSubtitle) {$(".listSubtitle").html(dp.listSubtitle); $(".listSubtitle").show()};
 
   // Add checkboxes
+  console.log("dp.search ")
+  console.log(dp.search)
   if (dp.search && $("#activeLayer").text() != dp.dataTitle) { // Only set when active layer changes, otherwise selection overwritten on change.
     
     let search = [];
@@ -1958,6 +2062,7 @@ function showList(dp,map) {
   }
   var data_sorted = []; // An array of objects
   var data_out = [];
+  let catList = {}; // An array of objects, one for each unique category
 
   $("#detaillist").text(""); // Clear prior results
 
@@ -1993,7 +2098,7 @@ function showList(dp,map) {
     foundMatch = 0;
     productMatchFound = 0;
 
-    if (count > 2000) {
+    if (count > 4000) {
         return;
     }
     let showIt = true;
@@ -2028,7 +2133,12 @@ function showList(dp,map) {
             for(var p = 0; p < products_array.length; p++) {
               if (products_array[p].length > 0) {
 
+                  // Maybe element[] needs to be available here so we know we're using lowercase.
+                  //console.log("elementRaw[dp.itemsColumn] " + elementRaw[dp.itemsColumn]);
+                  //console.log("elementRaw['Category'] " + elementRaw['Category']);
+                  //console.log("products_array[p].toLowerCase() " + products_array[p].toLowerCase());
                   if (elementRaw[dp.itemsColumn] && elementRaw[dp.itemsColumn].toLowerCase().indexOf(products_array[p].toLowerCase()) >= 0) {
+                  //if (element[dp.itemsColumn] && element[dp.itemsColumn].toLowerCase().indexOf(products_array[p].toLowerCase()) >= 0) {
 
                     productMatchFound++;
 
@@ -2127,6 +2237,7 @@ function showList(dp,map) {
             */
 
           } else {
+            // PPE arrives here even with cat
             foundMatch++; // No geo or keyword filter
           }
 
@@ -2167,10 +2278,10 @@ function showList(dp,map) {
     //  foundMatch++;
     //}
 
-    if (elementRaw.status == "0") {
-      foundMatch = 0;
-    }
     //console.log("foundMatch: " + foundMatch + ", productMatchFound: " + productMatchFound);
+
+
+    // BUGBUG - Is it valid to search above before making key lowercase? Should elementRaw key be made lowercase?
 
     if (foundMatch > 0 && productMatchFound > 0) {
       dataMatchCount++;
@@ -2184,6 +2295,22 @@ function showList(dp,map) {
         key = keys[n];
         //element[key] = elementRaw[key]; // Also keep uppercase for element["Prepared"]
         element[key.toLowerCase()] = elementRaw[key];
+      }
+
+      // Also repeated below, move here
+      /*
+      Update - Active - Show on map
+      Current - Active - All info is correct - Show on map
+
+      (Pending) - New, waiting to vet (blank). Has Timestamp, not yet reviewed and approved
+      Hide - Temporarily closed
+      Delete
+      */
+      if (!jQuery.isEmptyObject(element.status) && (element.status != "Update" && element.status != "Active")) {
+          //showListing = false;
+          foundMatch = 0;
+      } else {
+        validRowCount++;
       }
 
       iconColor = colorScale(element[dp.valueColumn]);
@@ -2230,9 +2357,13 @@ function showList(dp,map) {
       }
       element.mapframe = getMapframe(element);
 
-      // TO INVESTIGATE - elementRaw (not element) has to be used here for color scale.
-
-      if (1==1) {
+      let showListing = true;
+      if (element.status && !jQuery.isEmptyObject(element.status) && (element.status != "Update" && element.status != "Active")) {
+          showListing = false;
+          console.log("Excluded element.status " + element.status);
+      }
+      if (showListing) {
+        countDisplay++;
         // DETAILS LIST
         // colorScale(element[dp.valueColumn])
         //console.log("iconColor test here: " + iconColor)
@@ -2362,6 +2493,16 @@ function showList(dp,map) {
           } else if (element[dp.valueColumn] != element.name) {
             output += element[dp.valueColumn] + "<br>";
           }
+          //console.log("element[dp.valueColumn] " + element[dp.valueColumn]);
+          if(!catList[element[dp.valueColumn]]) {
+            catList[element[dp.valueColumn]] = {};
+            catList[element[dp.valueColumn]].count = 1;
+          } else {
+            catList[element[dp.valueColumn]].count++;
+          }
+        }
+        if (element[dp.showKeys]) {
+          output += "<b>" + dp.showLabels + ":</b> " + element[dp.showKeys] + "<br>";
         }
 
         if (element.mapframe) {
@@ -2371,7 +2512,7 @@ function showList(dp,map) {
             output += "<a href='" + element.property_link + "'>Property Details</a><br>";
         }
         if (element.county) {
-            output += '<a href="' + theTitleLink + '">Google Map</a> ';
+            output += '<a href="' + theTitleLink + '" target="_blank">Google Map</a> ';
         }
         
         if (dp.editLink) {
@@ -2441,7 +2582,20 @@ function showList(dp,map) {
       }
     }
   });
-  console.log("Total " + dp.dataTitle + " " + count);
+  console.log("Total " + dp.dataTitle + " " + countDisplay + " of " + count);
+
+  console.log("catList:");
+  console.log(catList);
+  if (catList && Object.keys(catList).length > 0) {
+    let catNavSide = "<div>All Categories</div>";
+
+    Object.keys(catList).forEach(key => {
+      catNavSide += "<div title='" + key + "'>" + key + " (" + catList[key].count + ")</div>";
+    });
+    console.log(catNavSide)
+    $("#tableSide").html(""); // Clear
+    $("#tableSide").append("<div class='catList'>" + catNavSide + "</div>");
+  }
 
   if (hash.name && $("#detaillist > [name='"+ hash.name.replace(/_/g,' ') +"']").length) {
     let listingName = hash.name.replace(/_/g,' ');
@@ -2464,7 +2618,7 @@ function showList(dp,map) {
   );
 
   var imenu = "<div style='display:none'>";
-  imenu += "<div id='itemMenu' class='popMenu filterBubble'>";
+  imenu += "<div id='listingMenu' class='popMenu filterBubble'>";
   imenu += "<div>View On Map</div>";
   imenu += "<div class='localonly mock-up' style='display:none'>Supplier Impact</div>";
   imenu += "<div class='localonly mock-up' style='display:none'>Production Impact</div>";
@@ -2488,12 +2642,12 @@ function showList(dp,map) {
       if ($("#catSearch").val()) {
         searchFor = "<b>" + $("#catSearch").val() + "</b> - "; // was twice BUGBUG
       }
-      if (dataMatchCount == count) {
-        searchFor += dataMatchCount + " records. ";
+      if (countDisplay == validRowCount) {
+        searchFor += countDisplay + " active records. " + count + " rows.";
       } else if (count==1) {
-        searchFor += dataMatchCount + " matching results within " + count + " records. ";
+        searchFor += countDisplay + " displayed from " + validRowCount + " active record. ";
       } else {
-        searchFor += dataMatchCount + " matching results within " + count + " records. ";
+        searchFor += countDisplay+ " displayed from " + validRowCount  + " active records. ";
       }
       // alert("showCount " + showCount); // 0 unless filtering for a profile
       //if (showCount == 1 && count - dataMatchCount > 1) {
@@ -2528,7 +2682,7 @@ function showList(dp,map) {
   }
 
   $(document).click(function(event) { // Hide open menus
-      $('#itemMenu').hide();
+      $('#listingMenu').hide();
       $('#locMenu').hide();
   });
 
@@ -3309,7 +3463,7 @@ function renderMapShapeAfterPromise(whichmap, hash, attempts) {
     }
     var mapCenter = [lat,lon];
 
-    var mbAttr = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+    var mbAttr = '<a href="https://neighborhood.org">Neighborhood.org</a> | <a href="https://www.openstreetmap.org/">OpenStreetMap</a> | ' +
         '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
         'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
         mbUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiZWUyZGV2IiwiYSI6ImNqaWdsMXJvdTE4azIzcXFscTB1Nmcwcm4ifQ.hECfwyQtM7RtkBtydKpc5g';
@@ -3350,11 +3504,11 @@ function renderMapShapeAfterPromise(whichmap, hash, attempts) {
     'Satellite' : L.tileLayer(mbUrl, {maxZoom: 25, id: 'mapbox.satellite', attribution: mbAttr}),
     // OpenStreetMap
     'Street Map' : L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19, attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+        maxZoom: 19, attribution: '<a href="https://neighborhood.org">Neighborhood.org</a> | <a href="http://openstreetmap.org">OpenStreetMap</a> | <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
     }),
     // OpenStreetMap_BlackAndWhite:
     'Grey' : L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-        maxZoom: 18, attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+        maxZoom: 18, attribution: '<a href="https://neighborhood.org">Neighborhood.org</a> | <a href="http://openstreetmap.org">OpenStreetMap</a> | <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
     }),
   }
 
