@@ -18,16 +18,6 @@
 <script type="text/javascript" src="/localsite/js/menu.js" id="/localsite/js/menu.js"></script>
 
 <!--
-NOT NEEDED
-<link rel="stylesheet" href="/community/css/material_icons.css" />
--->
-
-<!--
-LOADED BY localsite.js
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
--->
-
-<!--
 <script type="text/javascript" src="../../../../localsite/js/showdown.min.js" id="/localsite/js/showdown.min.js"></script>
 <script type="text/javascript" src="../../../../localsite/js/navigation.js" id="/localsite/js/navigation.js"></script>
 
@@ -98,6 +88,10 @@ function changeMenuLinks(itemid) {
     })
   //});
 }
+
+//setlinks.onmouseout = function(){
+//    alert("TTZ");
+//};
 </script>
 
 <style>
@@ -117,14 +111,14 @@ function changeMenuLinks(itemid) {
   width: auto !important;
   margin-top: 8px;
 }
-@media (max-width:500px) {
+@media (max-width:1400px) {
   .menuPackage {
-    width:100%;
+    width:200px;
     padding-right:0px;
     margin-right:0px;
     border:0px;
     padding-bottom: 40px;
-    border-bottom: #333 4px solid;
+    border-bottomX: #333 4px solid;
     margin-bottom: 0px;
   }
   .sectionArrowHolder {
@@ -159,39 +153,73 @@ function changeMenuLinks(itemid) {
 </head>
 <body>
 
+<link type="text/css" rel="stylesheet" href="/core/css/default.css" id="/core/css/default.css" />
+<style>
+.rightWhenWide {
+    position: absolute;
+    right: 0;
+    padding: 10px;
+}
+</style>
+<div class="rightWhenWide">
+
+    <div class="user-4 partner-4" onmouseleave="$('#makeUpdatesPopup').hide();$('.makeUpdatesClick').show();">
+        <a class="makeUpdatesClick button" href="/core/item/edit.aspx?s=5542.0.0.5316&amp;golast=%2fhistory%3fdynamic%3d1" onclick="$('#makeUpdatesPopup').show();$('.makeUpdatesClick').hide();event.stopPropagation();return false;">Edit</a> 
+
+        <div id="makeUpdatesPopup" style="display: none;" class="dropdown hideOnDocClick">            
+            <ul class="dropdown-menu dropdown-menu-right" style="left: auto; right: 0px; display: block;">
+                <li><a id="menuEditContent" href="/core/item/edit.aspx?s=5542.0.0.5316&amp;golast=%2fhistory%3fdynamic%3d1">Edit Page</a></li>
+                
+                <li><a id="menuPageAdmin" href="/net/content/admin.aspx?s=5542.0.0.5316">Page Admin</a></li>
+                
+                <li class="enableBlurbListEdit"><a class="editPageAreas" href="/core/item/editblurb.aspx?s=5542.0.0.5316">Hide Edit Buttons</a></li>
+                
+                <li class="divider"></li>
+                
+                <li><a id="menuAddSubtopic" href="/core/item/add.aspx?s=0.0.0.5316&amp;parentid=5542">Add New Page</a></li>
+                
+                <li><a id="menuAdmin" href="/admin?s=0.0.0.5316">Site Admin</a></li>
+                
+            </ul>
+
+        </div>
+    </div>
+
+</div>
+
 <span class="material-icons blue-color">recycling</span>
-<a href="javascript:changeMenuLinks(1234);">set links</a>
+<a href="javascript:changeMenuLinks(1234);" id="setlinks">set links</a>
 
 <div class="moduleJS">
 
   <!-- 3 dots: … -->
 
-  <div class="menuPackage">
+  <div class="menuPackage sideMenuColumn">
   <div id="showScope" class="revealButton btn btn-white" style="cursor:pointer;">Scope</div>
-  <div id="scopeMenu" class="partnerCheckboxes"></div>
+  <div id="scopeMenu" class="menuWidth partnerCheckboxes"></div>
   </div>
 
-  <div class="menuPackage">
+  <div class="menuPackage sideMenuColumn">
 	<div id="showSiteNav" class="revealButton btn btn-white" style="cursor:pointer;">Map Layers</div>
-	<div id="localSiteMenu" class="partnerCheckboxes"></div>
+	<div id="localSiteMenu" class="menuWidth partnerCheckboxes"></div>
   </div>
 
-  <div class="menuPackage">
+  <div class="menuPackage sideMenuColumn">
   	<div id="showIndustryMenu" class="revealButton btn btn-white" style="cursor:pointer;">Industries</div>
-  	<div id="partnerCheckboxes"></div>
+  	<div id="partnerCheckboxes" class="menuWidth"></div>
   </div>
 
-  <div class="menuPackage" style="padding-right:0px;">
+  <div class="menuPackage sideMenuColumn" style="padding-right:0px;">
     <div class="hideMenuPackage hideAdvanced close-X btn btn-white" style="float:right; padding-left:12px; padding-right:12px;">✕</div>
   	<div id="showPartnerMenu" class="revealButton btn btn-white" style="cursor:pointer;">Partner Tools</div>
-  	<div id="partnerMenu"></div>
+  	<div id="partnerMenu" class="menuWidth"></div>
   </div>
 
   <div style="clear:both; padding-top:30px;">
   	
 	  <div style="border:1px solid #ccc; padding:30px">
 	  	Overlays In Side<br><br>
-	  	<div class="overlaysInSide"></div>
+	  	<div class="menuWidth overlaysInSide"></div>
 	  </div>
   </div>
 

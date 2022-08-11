@@ -37,7 +37,21 @@ function getDirectMenuLink(partnerMenu,item) {
                 regex = /\[partnerid\]/g;
                 item.link = item.link.replace(regex, partnerMenu.partnerid);
             } else {
+                regex = /&p=\[partnerid\]/g; // Remove preceding & symbol
+                item.link = item.link.replace(regex, "");
                 regex = /p=\[partnerid\]/g;
+                item.link = item.link.replace(regex, "");
+            }
+        }
+        if (itemtypeBool(partnerMenu, item)) { // for events only.
+            //item.link = item.link.replace(/ /g,"-");
+
+            let regex = /\[dateid\]/g;
+            if (partnerMenu.dateID && parseInt(partnerMenu.dateID) > 0) {
+                regex = /\[dateid\]/g;
+                item.link = item.link.replace(regex, partnerMenu.dateID);
+            } else {
+                regex = /&?dateid=\[dateid\]/g; // Remove optional preceding & symbol
                 item.link = item.link.replace(regex, "");
             }
         }
@@ -75,7 +89,7 @@ function initMenu(partnerMenu) {
 
 	    //alert("layerJson: " + layerJson);
 	    $.getJSON(layerJson, function (data) {
-	    	displaypartnerCheckboxes(partnerMenu,data);
+            displaypartnerCheckboxes(partnerMenu, data);
 	    	/*
 	        dp.data = readJsonData(data, dp.numColumns, dp.valueColumn);
 	        processOutput(dp,map,map2,whichmap,whichmap2,basemaps1,basemaps2,function(results){
@@ -151,7 +165,7 @@ function initMenu(partnerMenu) {
 
 	                
 	          		// These should be lazy loaded when clicking menu
-	                //displayBigThumbnails(hash.show, "main",adminNavObject);
+	                //displayBigThumbnails(0, hash.show, "main",adminNavObject);
 	                //displayHexagonMenu("",adminNavObject);
 	                
 	                if (!hash.show && !param.show) { // INITial load
@@ -173,7 +187,7 @@ function initMenu(partnerMenu) {
 	//}
 
   $(document).on("click", partnerMenu.revealButton, function(event) {
-  	alert("showPartnerMenu " + partnerMenu.revealButton);
+  	console.log("showPartnerMenu " + partnerMenu.revealButton);
     $(partnerMenu.menuDiv).show();
     $(partnerMenu.menuDiv).prependTo($(this).parent());
     event.stopPropagation();
@@ -181,6 +195,61 @@ function initMenu(partnerMenu) {
 
 } // end initMenu
 
+function addSValueToLinks(partnerMenu) {
+
+    if (typeof (BrowserUtil) != "undefined") {
+        if (BrowserUtil.host.indexOf("localhost") >= 0) {
+            // Update any of the navigation links that don't already have an s value
+            $(partnerMenu.menuDiv + ' a[href]').not('[href^="http"]').not('[href^="javascript"]').not('[href="#"]')
+                .attr('href', addSValueToLink);
+            $(partnerMenu.menuDiv + ' div[data-link]').not('[data-link^="http"]').not('[data-link^="javascript"]').not('[data-link="#"]')
+                .attr('data-link', addSValueToLink);
+        }
+    }
+}
+
+function addSValueToLink(index, currentValue) {
+    //console.debug('before: ' + currentValue);
+    var $this = $(this);
+    var queryStringParams = $.extend({}, BrowserUtil.queryStringParams);
+    var tmpQueryString = {};
+    if (typeof (queryStringParams.s) != "undefined") {
+        tmpQueryString.s = queryStringParams.s;
+    }
+    if (typeof (queryStringParams.db) != "undefined") {
+        tmpQueryString.db = queryStringParams.db;
+    }
+
+    if (currentValue.indexOf('s=') >= 0) {
+        var urlQueryString = BrowserUtil.parseQueryString(currentValue.substr(currentValue.indexOf('?')));
+        var sValueArray = urlQueryString.s.split('.');
+
+        if (sValueArray.length == 1) {
+            tmpQueryString.s = sValueArray[0] + '.0.0.' + partnerMenu.siteID; // only s value itemid present.
+        }
+        else {
+            tmpQueryString.s = urlQueryString.s; // assume full s value is present
+        }
+
+        currentValue = currentValue.replace('s=' + urlQueryString.s, ''); // remove the s value
+
+        if ((currentValue.indexOf('?') == currentValue.length - 1) || (currentValue.indexOf('&') == currentValue.length - 1)) {
+            currentValue = currentValue.substr(0, currentValue.length - 1); // remove the trailing '?' character
+        }
+        currentValue = currentValue.replace('?&', '?'); // removed s value may be the first of multiple query string values.
+    }
+    else {
+        tmpQueryString.s = '0.0.0.' + partnerMenu.siteID;
+    }
+
+    if ($this.attr('href') !== undefined) {
+        $this.attr('href', currentValue + (currentValue.indexOf('?') >= 0 ? '&' : '?') + $.param(tmpQueryString));
+    }
+    if ($this.attr('data-link') !== undefined) {
+        $this.attr('data-link', currentValue + (currentValue.indexOf('?') >= 0 ? '&' : '?') + $.param(tmpQueryString));
+    }
+    //console.debug('after: ' + $(this).attr('href'));
+}
 
 function clearAll(siteObject) {
     $('.layersCB:checked').each(function() {
@@ -188,6 +257,60 @@ function clearAll(siteObject) {
         // From explore embed
         //hideLayer(checkedLayer.replace('go-',''),siteObject);
     });
+}
+
+
+function showSubmenu(id) { //onmouseclick
+    if ($("#" + id).hasClass("openMenu")) {
+        console.log("hide showSubmenu for id: " + id);
+        $("#" + id).removeClass("openMenu");
+        $("#" + id + ' .layerCbRow').hide();
+        if ($(".sideMenuColumn").width() < 50) { 
+            $("#" + id + " .layerSectionTitle").hide();
+        }
+    } else {
+        console.log("showSubmenu for id: " + id);
+        $("#" + id).addClass("openMenu");
+        $("#" + id + ' .layerCbRow').show();
+        $("#" + id + " .layerSectionTitle").show();
+    }
+}
+// For narrow nav
+function showMenuNav(id) { //onmouseenter
+    if ($(".sideMenuColumn").width() < 50) { // Only do rollover popout when side column is narrow.
+        //console.log("showMenuNav " + id);
+        $(".sideMenuColumn").addClass("sideMenuColumnNarrow"); // Adds black background
+        $(".sideMenuColumn").removeClass("sideMenuColumnWide");
+        //return; // TEMP
+        $("#" + id + " .layerSectionTitle").show();
+    } else {
+        $(".sideMenuColumn").addClass("sideMenuColumnWide");
+        $(".sideMenuColumn").removeClass("sideMenuColumnNarrow");
+    }
+}
+function hideMenuNav(id) { //onmouseleave
+    
+    //return; // TEMP
+    //console.log(".sideMenuColumn " + $(".sideMenuColumn").width());
+
+    // BUGBUG - Need to check parent .sideMenuColumn since multiple instances may reside on page.
+    // http://localhost:8887/localsite/partner-menu.html
+    if ($(".sideMenuColumn").width() < 50) { // Only hide when side is narrow.
+        //console.log("hideMenuNav " + id);
+        // Check parent has narrow class
+        const sideMenuColumnNarrow = $("#" + id + " .layerSectionTitle").closest(".sideMenuColumnNarrow");  
+        if(sideMenuColumnNarrow.length > 0) { // Only hide when in .sideMenuColumnNarrow
+            $("#" + id).removeClass("openMenu");
+            //$(".layerSection-" + id).removeClass("openMenu");
+            $("#" + id + " .layerSectionTitle").hide();
+            $("#" + id + " .layerCbRow").hide();
+        }
+        event.stopPropagation(); //cancel bubbling
+    }
+}
+
+function formatLinkId(section,title) {
+    return (section + "-" + title).replace(/\&/g, "").replace(/ /g, "_").replace(/^.*\/\/[^\/]+/, '').toLowerCase();
 }
 function displaypartnerCheckboxes(partnerMenu,menuDataset) { // For Layer Icon on map - Master
     if ($(partnerMenu.menuDiv).text().length > 0) {
@@ -268,6 +391,7 @@ function displaypartnerCheckboxes(partnerMenu,menuDataset) { // For Layer Icon o
                     previousOverlaySet = item.section;
                 }
 
+                let directlink = getDirectMenuLink(partnerMenu, item); // Replaces [itemid] with current ItemID
                 // MENU
                 if (item.section && item.section != previousSet) {
                     //console.log("TITLE: " + title);
@@ -289,7 +413,12 @@ function displaypartnerCheckboxes(partnerMenu,menuDataset) { // For Layer Icon o
                     if (item.sectionicon) {
                         //sectionIcon = item.sectionicon;
                     }
-                    partnerCheckboxes += '<div class="layerSectionAccess user-' + menuaccess + '" style="display:none"><div ' + layerSectionDisplay + ' class="dontsplit layerSection layerSection-' + item.section.toLowerCase().replace(/ /g,"-") + '" menulevel="' + menulevel + '"><div style="clearX:both; pointer-events: auto;" data-layer-section="' + item.section + '" class="layerSectionClick">';
+                    let linktext = "";
+                    if (directlink)  { 
+                        linktext = ' link="' + directlink + '"';
+                    }
+                    partnerCheckboxes += '<div class="layerSectionAccess user-' + menuaccess + '" id="' + formatLinkId(item.section,item.title + "_parent") + '" style="display:none">'; //  onmouseleave="hideMenuNav(this.id)"
+                    partnerCheckboxes += '<div ' + layerSectionDisplay + ' id="' + formatLinkId(item.section,item.title) + '" class="dontsplit layerSection layerSectionOpen layerSection-' + item.section.toLowerCase().replace(/ /g,"-") + '" menulevel="' + menulevel + '" onmouseenter="showMenuNav(this.id)" onmouseleave="hideMenuNav(this.id)"><div style="clearX:both; pointer-events: auto;" data-layer-section="' + item.section + '"' + linktext + '" class="layerSectionClick" onclick="showSubmenu(this.parentElement.id)">';
                     if (partnerMenu.showArrows) {
                         partnerCheckboxes += '<div class="sectionArrowHolder"><div class="leftArrow"></div></div>';
                     }
@@ -303,11 +432,11 @@ function displaypartnerCheckboxes(partnerMenu,menuDataset) { // For Layer Icon o
                     partnerCheckboxes += '<div class="layerSectionTitle">' + item.section + '</div></div>';
                 } // Check circle // Was around title: <label for="go-' + item.item + '" style="width:100%; overflow:auto">
                 // <i class="material-icons" style="float:right;color:#ccc">&#xE86C;</i>
-                var directlink = getDirectMenuLink(partnerMenu, item);
+                
                 
                 // Link is applied dynamically using [itemid] in attr data-link
                 if (showSublevel) {
-                    partnerCheckboxes += '<div class="user-' + menuaccess + '"><div class="layerCbRow row-' + item.item + '"><div><a data-link="' + directlink + '" href="' + directlink + '" class="layerAction">';
+                    partnerCheckboxes += '<div class="user-' + menuaccess + '"><div class="layerCbRow row-' + item.item + '" data-link="' + directlink + '"><div><a data-link="' + directlink + '" href="' + directlink + '" class="layerAction">';
                     /*
                     if (item.feed) {
                         partnerCheckboxes += '<div class="layerActionIcon" data-link="' + directlink + '"></div>';
@@ -342,7 +471,8 @@ function displaypartnerCheckboxes(partnerMenu,menuDataset) { // For Layer Icon o
     }
     
     $(document).ready(function () {
-	   $(partnerMenu.menuDiv).append(partnerCheckboxes);
+        $(partnerMenu.menuDiv).append(partnerCheckboxes);
+        addSValueToLinks(partnerMenu);
     });
 	
 	$(".overlaysInSide").append(overlayList);
@@ -403,8 +533,9 @@ function displaypartnerCheckboxes(partnerMenu,menuDataset) { // For Layer Icon o
 
         event.stopPropagation();
     });
-    $(document).on("click", partnerMenu.menuDiv + ' .layerAction', function(event) {
-        // Clear all layers
+    //$(document).on("click", partnerMenu.menuDiv + ' .layerAction', function(event) { // Second level menus
+    $(document).on("click", '.layerCbRow', function(event) { // Second level menus
+         // Clear all layers
         clearAll(menuDataset);
         console.log('.layerAction');
 
@@ -432,6 +563,22 @@ function displaypartnerCheckboxes(partnerMenu,menuDataset) { // For Layer Icon o
         event.stopPropagation();
     });
     
+    /*
+    $(".layerSection").mouseenter(function(){
+      //$("p").css("background-color", "yellow");
+
+      $(".layerSectionTitle").show();
+      //console.log("enter")
+    });
+    $(".layerSection").mouseleave(function(){
+      //$("p").css("background-color", "yellow");
+
+      $(".layerSectionTitle").hide();
+      alert("leave")
+
+    });
+    */
+
     // , .overlaysInSide .layerCbTitle
     $(document).on("click", partnerMenu.menuDiv + ' .overlaysInSide .layerCbRow', function(event) {
         //if (location.host.indexOf('localhost') >= 0) {
@@ -463,37 +610,65 @@ function displaypartnerCheckboxes(partnerMenu,menuDataset) { // For Layer Icon o
         $('.showAllLayers').hide();
         event.stopPropagation();
     });
-    $(document).on("click", partnerMenu.menuDiv + ' .layerSectionClick', function(event) {
-        if ($(this).attr("data-layer-section")) {
-            layerSectionOpen($(this).attr("data-layer-section").toLowerCase().replace(/ /g,"-"));
-        } else {
-            console.log("layerSectionClick click");
-            //$('.layerSection').hide();
-            //$(this).parent().parent().show();
-            //$(".listPanelHolder").show();// This shows list too.
-            
-            //$('.layerCbRow').hide(); // Hide All
-            //$(this).parent().parent().find('.layerSectionClick').show();
-            $(this).parent().find('.layerCbRow').toggle(); // Up to layerSection.
-            //$(this).parent().parent().find('.layerCbRow').show(); // Up to layerSectionAccess.
 
-            if ($(this).find('.leftArrow').length) {
-                $(this).find('.leftArrow').addClass('downArrow').removeClass('leftArrow');
-                // If any layers in the current section are feeds, show 3-dots tip.
-                if ($(this).parent().parent().find('.layerActionIcon').length) {
-                    //$(this).parent().parent().append($('.sideTip'));
-                    $('.sideTip').show();
-                    setTimeout(function() {
-                        $(".sideTip").slideUp('slow')
-                    }, 4000);
-                } else {
-                    $('.sideTip').hide();
-                }
+    $(document).on("click", partnerMenu.menuDiv + ' .layerSectionClick', function(event) { // Top level
+        //alert("parent width: " + $(this).parent().parent().parent().parent().width()); // Same as the following, 38px when narrow:
+        
+        //let menuColumnWidth = $(this).width(); // Bug - Uses width after resize.
+        let menuColumnWidth = $(this).parent().parent().parent().parent().width(); 
+        // Not working
+        //let menuColumnWidth = $(partnerMenu.menuDiv + '.layerSectionClick').parent().width();
+        console.log("This partnerMenu.menuDiv width: " + menuColumnWidth);
+
+        if (1==2 && menuColumnWidth < 120) { // Only use section as link when side is narrow
+            console.log("Click narrow - " + partnerMenu.menuDiv);
+            let link = $(this).attr("link");
+            if (typeof link !== 'undefined' && link !== false) { // For diff browsers
+
+                //window.location = link;
+                console.log("Click link disabled: " + link);
             } else {
-                $(this).find('.downArrow').addClass('leftArrow').removeClass('downArrow');
+                console.log("Clicked " + $(this).attr("data-layer-section") + ", but no link provided in json")
             }
+            event.stopPropagation();
+            return;
+        } else {
+            console.log(partnerMenu.menuDiv + " .layerSectionClick");
+            
+            if ($(this).attr("data-layer-section")) {
+                console.log("data-layer-section parent, so no action if subnav");
+                //layerSectionOpen($(this).attr("data-layer-section").toLowerCase().replace(/ /g,"-"));
+            } else {
+                alert("layerSectionClick click, no data-layer-section attr");
+                //$('.layerSection').hide();
+                //$(this).parent().parent().show();
+                //$(".listPanelHolder").show();// This shows list too.
+                
+                //$('.layerCbRow').hide(); // Hide All
+                //$(this).parent().parent().find('.layerSectionClick').show();
+                $(this).parent().find('.layerCbRow').toggle(); // Up to layerSection.
+                //$(this).parent().parent().find('.layerCbRow').show(); // Up to layerSectionAccess.
+
+                if ($(this).find('.leftArrow').length) {
+                    $(this).find('.leftArrow').addClass('downArrow').removeClass('leftArrow');
+                    // If any layers in the current section are feeds, show 3-dots tip.
+                    if ($(this).parent().parent().find('.layerActionIcon').length) {
+                        //$(this).parent().parent().append($('.sideTip'));
+                        $('.sideTip').show();
+                        setTimeout(function() {
+                            $(".sideTip").slideUp('slow')
+                        }, 4000);
+                    } else {
+                        $('.sideTip').hide();
+                    }
+                } else {
+                    $(this).find('.downArrow').addClass('leftArrow').removeClass('downArrow');
+                }
+            }
+            
         }
         event.stopPropagation();
+        
     });
 
     function layerSectionOpen(section) {

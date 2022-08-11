@@ -1,10 +1,15 @@
-.table-cell {
+.menu-loaded {
+    display: block !important;
+}
+.table-cell, .table-cell-mobile {
   display: table-cell;
   vertical-align: top;
+  position: relative; /* Allows menu rollover/popups to overlap adjacent cell */
 }
 @media (max-width: 800px) {
   .table-cell {
     display: block;
+    float: left;
   }
 }
 .moduleJS {
@@ -12,13 +17,19 @@
     font-family: 'Open Sans', 'Helvetica Neue', HelveticaNeue, calibri, arial, sans-serif;
 }
 .layerSection {
-	border-bottom: 1px solid #ddd;
 	min-width:  32px;
-	min-height: 32px;
+	min-height: 40px;
+	color: #333;
+	clear: both;
+}
+.layerSection.openMenu {
+	min-width: 200px; /* So hideMenuNav() is not triggered too often by a narrow div */
+}
+.layerSection.openMenu:last-child {
+	/* margin-bottom: 15px; */
 }
 .layerSectionClick {
-    padding: 6px 8px 3px 18px;
-    color: #333;
+    padding: 6px 8px 0px 12px;
     font-size: 16px;
     font-family: 'Open Sans Condensed', sans-serif;
     cursor: pointer;
@@ -36,53 +47,6 @@
 	.hideMenuPackage {
 		display: none;
 	}
-
-}
-#partnerMenuHolder {
-	min-width: 185px;
-}
-.absoluteWhenNarrowX {
-	min-width: 250px;
-}
-@media (max-width: 1100px) {
-	.absoluteWhenNarrow {
-		/* position: absolute; */
-		z-index: 1;
-		min-width: 38px;
-		max-width: 38px;
-		top: 0;
-		bottom: 0;
-		overflow: visible;
-	}
-	#partnerMenuHolder {
-		min-width: 38px;
-	}
-	.layerSection {
-		max-width: 38px;
-		white-space: nowrap;
-		overflow: hidden;
-	}
-	.layerSection:hover {
-		max-width: auto;
-		overflow: visible;
-		max-width: 200px; /* allow background color to be visible */
-		text-align: center;
-		background-color: #efefef;
-		border: 1px solid #777;
-		margin:  -1px;
-		margin-left: 0px;
-		z-index: 100;
-	}
-	.layerSectionIcon {
-		float: initial;
-	}
-	.layerSectionClick {
-		min-width: auto;
-		padding-left: 8px;
-	}
-	.menuBuddy {
-		padding: 20px 0 20px 40px;
-	}
 }
 .layerCheckboxes {
 	/* min-width: 500px; */
@@ -99,17 +63,20 @@
 }
 .layerCbRow {
 	display:none;
-	padding: 1px 0px 0px 27px;
+	padding: 1px 0px 0px 0px;
 	color: #888;
 	clear: both;
-	overflow: auto;
-	border-top: 1px solid #eee;
+}
+.sideMenuColumnNarrow	.layerCbRow {
+	background-color: #fff;
+	border-left: 1px solid #ccc;
+	border-right: 1px solid #ccc;
+	border-bottom: 1px solid #333;
+	width: 180px; /* To overlap sideMenuColumnNarrow */
 }
 .layerCbTitle {
 	white-space:nowrap;
-	margin-top: 6px;
-	margin-left: 22px;
-	margin-right: 25px;
+	margin: 4px 25px 4px 12px;
 	font-size: 15px;
 	pointer-events: none; /* Allow pass through */
 	font-family: 'Open Sans Condensed', sans-serif;
@@ -117,13 +84,167 @@
 .layerCbRow:hover {
 	background: #ececec;
 	color: #555;
+	cursor: pointer;
 }
+.sectionArrowHolder {
+    float: right;
+    padding-top: 12px;
+}
+.leftArrow {
+	width: 0;
+	height: 0;
+	border-style: solid;
+	border-width: 7px 0px 7px 8px;
+	border-color: transparent transparent transparent #777;
+	margin-top: -8px;
+}
+.leftArrow:hover {
+	border-color: transparent transparent transparent #999;
+}
+.downArrow {
+	width: 0;
+	height: 0;
+	border-style: solid;
+	border-width: 7px 8px 0 7px;
+	border-color: #555 transparent transparent transparent;
+	margin: -6px 0px 0 0;
+}
+.downArrow:hover {
+	border-color: #999 transparent transparent transparent;
+}
+
+#partnerMenuHolder {
+	min-width: 185px;
+}
+.sideMenuColumn {
+		z-index: 1;
+		min-width: 160px;
+		background: rgb(238, 238, 238);
+}
+@media (min-width: 1401px) {
+	.layerSectionTitle {
+		display: block;
+	}
+}
+@media (max-width: 600px) {
+	#partnerMenuHolder {
+		max-widthX: 100px; /* Less than 120px to trigger clicks without opening submenu */
+	}
+}
+
+/* Narrow using class */
+.sideMenuColumnNarrow { /* Applied with script. Also applied by scaling below. */
+	min-width: 38px;
+	max-width: 38px; 
+}
+.sideMenuColumnNarrow	.layerSection {
+	white-space: nowrap;
+	overflow: visible;
+	float: left; /* For ideMenuNav(id) */
+}
+.sideMenuColumnNarrow	.layerSectionTitle {
+	display: none;
+}
+
+.sideMenuColumnNarrow .layerSectionTitle {
+	width: 180px; /* required for background color to be visible */
+	color: #fff;
+	background-color: #333;
+	margin-top: -8px;
+	margin-left:  -10px;
+	padding-top: 8px;
+	padding-bottom: 8px;
+	padding-right: 8px;
+	border-bottom: 1px solid #fff;
+}
+@media (max-width: 1400px) {
+	.sideMenuColumnWide .layerCbRow { /* Allow submenu to be hidden on resize without using javascript */
+		display: none !important;
+	}
+	#partnerMenuHolder {
+		min-width: 32px;
+	}
+
+	.sideMenuColumn {
+		z-index: 1;
+		min-width: 38px;
+		/* max-width: 38px; Avoiding since page's .sidechildlist is injected. */
+		max-width: 38px; 
+		/*
+		top: 0;
+		bottom: 0;
+		*/
+		overflow: visible;
+		background: rgb(238, 238, 238);
+	}
+	.layerSection {
+		/* max-width: 38px; Avoid, else background is not visible. */
+		white-space: nowrap;
+		overflow: visible;
+	}
+	.layerSectionTitle {
+		display: none;
+	}
+	.layerCbRow {
+		display: none; /* hides on resize from wide to narrow */
+	}
+	.layerSection:last-child {
+		margin-bottom: 0px;
+	}
+	.layerSectionIcon {
+		float: initial;
+		min-height: 20px;
+	}
+	.layerSectionClick {
+		min-width: auto;
+		padding-left: 8px;
+	}
+	.layerCbRowXXX {
+		display:none !important;
+	}
+	.sectionArrowHolder {
+		display:none;
+	}
+}
+.sideListCell {
+	border-right: 1px solid #ddd;
+}
+.sideList {
+	margin: 20px;
+	min-width: 200px;
+	max-width: 300px;
+}
+.leftCell {
+	padding-top: 20px;
+}
+@media (max-width: 800px) {
+	.sideListCell {
+		border-right: none;
+	}
+	.leftCell {
+		max-width: 90%; /* Allows partnerAdmin menu to reside to the left on mobile */
+	}
+	.rightCell {
+		width: 100%;
+	}
+}
+.layerSectionOpenX {
+	max-width: auto;
+	overflow: visible;
+	max-width: 200px; /* allow background color to be visible */
+	background-color: #efefef;
+	borderX: 1px solid #777;
+	marginX:  -1px;
+	margin-leftX: 0px;
+	z-index: 100000;
+}
+
 .layerAction {
 	clear:both;
 	float:right;
 	width: 100%;
 	z-index: 9999;
-	min-height: 34px;
+	/* min-height: 34px; */
 	/* border: 1px solid red; */
 	cursor: pointer;
 }
@@ -197,29 +318,113 @@
 	display: block;
 }
 
-.sectionArrowHolder {
-    float: right;
-    padding-top: 12px;
+.dropdown-menu-for-button {
+    z-index: 1000;
+    float: left;
+    min-width: 160px;
+    padding: 5px 0;
+    margin: 2px 0 0;
+    list-style: none;
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    box-shadow: 0 5px 10px rgb(0 0 0 / 20%);
+    background-clip: padding-box;
 }
-.leftArrow {
-	width: 0;
-	height: 0;
-	border-style: solid;
-	border-width: 7px 0px 7px 8px;
-	border-color: transparent transparent transparent #777;
-	margin-top: -8px;
+
+.dropdown-menu {
+		position: absolute;
+		display: none;
+    z-index: 1000;
+    float: left;
+    min-width: 160px;
+    padding: 5px 0;
+    margin: 2px 0 0;
+    list-style: none;
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    box-shadow: 0 5px 10px rgb(0 0 0 / 20%);
+    background-clip: padding-box;
 }
-.leftArrow:hover {
-	border-color: transparent transparent transparent #999;
+.dropdown-menu a {
+    display: block;
+    padding: 3px 20px;
+    clear: both;
+    font-weight: normal;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+    font-size: 14px;
 }
-.downArrow {
-	width: 0;
-	height: 0;
-	border-style: solid;
-	border-width: 7px 8px 0 7px;
-	border-color: #555 transparent transparent transparent;
-	margin: -6px 0px 0 0;
+.dropdown-menu a:hover {
+	background-color: #3076ae; /* For browsers that do not support gradients */
+  	background-image: linear-gradient(#3887c6, #3076ae);
+	color: #fff;
+	text-decoration: none;
 }
-.downArrow:hover {
-	border-color: #999 transparent transparent transparent;
+.dropdown-menu .divider {
+    height: 1px;
+    margin: 9px 1px;
+    overflow: hidden;
+    border-bottom: 1px solid #e5e5e5;
 }
+
+
+
+/* Open nav icons when rolling over. Originally Bootstrap. */
+ul.nav li.dropdown:hover ul.dropdown-menu {
+    display: block;    
+}
+.nav-pills .dropdown-menu {
+    margin-top: 0px;
+}
+.nav-pills {
+		padding: 0px;
+		margin: 0px;
+    margin-right:3px;
+    margin-bottom: 0px;
+}
+
+
+.nav-tabs>li, .nav-pills>li {
+    float: left;
+}
+.dropdown {
+    position: relative;
+}
+.nav {
+    display: block;
+}
+.nav-pills li a {
+    font-weight: normal;
+}
+.nav>li>a {
+    padding: 8px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+}
+.nav-pills>li>a {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+}
+.nav-tabs>li>a, .nav-pills>li>a {
+    padding-right: 12px;
+    padding-left: 12px;
+    margin-right: 2px;
+    line-height: 14px;
+}
+.nav>li>a {
+    display: block;
+}
+
