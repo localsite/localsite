@@ -532,7 +532,7 @@ function consoleLog(text,value) {
     }
   }
 }
-//alert("test")
+
 function loadLocalTemplate() {
   let bodyFile = theroot + "map/index.html #insertedText";
   //alert("Before template Loaded: " + bodyFile);
@@ -673,12 +673,13 @@ loadScript(theroot + 'js/jquery.min.js', function(results) {
           } else if(document.getElementById("bodyFile") == null) {
             $('body').prepend("<div id='bodyFile'></div>");
           }
-          //if (param.display == "everything" || param.display == "locfilters" || param.display == "map") {
-          //if (param.showheader != "false") { // Prevents dup header on map/index.html
-            loadLocalTemplate();
-          //} else {
-          //  $("#headerbar").prependTo("body"); // For map/index.html
-          //}
+          if (param.showheader == "true" || param.showsearch == "true" || param.display == "everything" || param.display == "locfilters" || param.display == "map") {
+            //if (param.templatepage != "true") { // Prevents dup header on map/index.html - Correction, this is needed. param.templatepage can probably be removed.
+              loadLocalTemplate();
+            //}
+            //else {
+            //  $("#headerbar").prependTo("body"); // For map/index.html
+          }
         
 
           // LOAD INFO TEMPLATE - Holds input-output widgets
@@ -824,68 +825,74 @@ loadScript(theroot + 'js/jquery.min.js', function(results) {
 
   let fullsite = false;
   // FULL SITE - everything or map
-  //if (param.showheader == "true" || param.display == "everything" || param.display == "locfilters" || param.display == "navigation" || param.display == "map") {
-  //if (param.showheader != "false") {
+  if (param.showheader == "true" || param.display == "everything" || param.display == "locfilters" || param.display == "navigation" || param.display == "map") {
+    //alert("added param.show above as test " + param.show)
+    if (param.showheader != "false" || param.display == "map") {
 
-    fullsite = true;
-    includeCSS3(theroot + 'css/map.css',theroot); // Before naics.js so #industries can be overwritten.
-    includeCSS3(theroot + 'css/naics.css',theroot);
-    // customD3loaded
-    if (param.preloadmap != "false" && param.showheader == "true") {
-      loadLeafletAndMapFilters();
-    }
+      fullsite = true;
+      includeCSS3(theroot + 'css/map.css',theroot); // Before naics.js so #industries can be overwritten.
 
-    //includeCSS3(theroot + 'css/bootstrap.darkly.min.css',theroot);
+      // TODO - Try limiting to param.display == "everything"
+      includeCSS3(theroot + 'css/naics.css',theroot);
+      
+      // customD3loaded
+      if (param.preloadmap != "false" && (param.showheader == "true" || param.display == "map")) {
+        loadLeafletAndMapFilters();
+      }
 
-    if (param.display == "everything") {
+      //includeCSS3(theroot + 'css/bootstrap.darkly.min.css',theroot);
 
-      loadScript(theroot + '../io/build/lib/useeio_widgets.js', function(results) {
-        if (param.omit_old_naics == "true") {
-          loadScript(theroot + 'js/naics2.js', function(results) {
-          });
-        } else {
+      if (param.display == "everything") {
+
+        loadScript(theroot + '../io/build/lib/useeio_widgets.js', function(results) {
+          if (param.omit_old_naics == "true") {
+            loadScript(theroot + 'js/naics2.js', function(results) {
+            });
+          } else {
+            loadScript(theroot + 'js/d3.v5.min.js', function(results) {
+              loadScript(theroot + 'js/naics.js', function(results) {
+                console.log("everything");
+              });
+            });
+          }
+        });
+      }
+
+      loadTabulator();
+      
+      if (param.display == "everything") {
+        includeCSS3(theroot + '../io/build/widgets.css',theroot);
+        includeCSS3(theroot + '../io/build/iochart.css',theroot);
+      }
+      
+      loadSearchFilterIncludes();
+
+      includeCSS3(theroot + 'css/leaflet.icon-material.css',theroot);
+      
+      //loadScript(theroot + 'js/table-sort.js', function(results) {}); // For county grid column sort
+
+
+      if (param.display == "everything") {
+        //if(param.showbubbles) {
           loadScript(theroot + 'js/d3.v5.min.js', function(results) {
-            loadScript(theroot + 'js/naics.js', function(results) {
-              console.log("everything");
+            loadScript(theroot + '../io/charts/bubble/js/bubble.js', function(results) {
+              // HACK - call twice so rollovers work.
+                //refreshBubbleWidget();
+                //alert("go")
+
+                // Instead, called from naics.js
+                //displayImpactBubbles(1);
+                //setTimeout( function() {
+                  
+                  // No luck...
+                  //displayImpactBubbles(1);
+                //}, 1000 );
             });
           });
-        }
-      });
+        //}
+      } // end everything
     }
-
-    loadTabulator();
-    
-    if (param.display == "everything") {
-      includeCSS3(theroot + '../io/build/widgets.css',theroot);
-      includeCSS3(theroot + '../io/build/iochart.css',theroot);
-    }
-    
-    loadSearchFilterIncludes();
-
-    includeCSS3(theroot + 'css/leaflet.icon-material.css',theroot);
-    
-    //loadScript(theroot + 'js/table-sort.js', function(results) {}); // For county grid column sort
-
-
-    if (param.display == "everything") {
-      //if(param.showbubbles) {
-        loadScript(theroot + 'js/d3.v5.min.js', function(results) {
-          loadScript(theroot + '../io/charts/bubble/js/bubble.js', function(results) {
-            // HACK - call twice so rollovers work.
-              //refreshBubbleWidget();
-              //alert("go")
-
-              // Instead, called from naics.js
-              //displayImpactBubbles(1);
-              //setTimeout( function() {
-                
-                // No luck...
-                //displayImpactBubbles(1);
-              //}, 1000 );
-          });
-        });
-      //}
-    } // end everything
+  }
 
   //} else { // Show map or list without header
 
@@ -934,9 +941,9 @@ loadScript(theroot + 'js/jquery.min.js', function(results) {
   } else { // jQuery not available yet!
 
     if(location.host.indexOf('localhost') >= 0) {
-      alert("Localhost alert: JQUERY NOT YET AVAILABLE!");
+      alert("Localhost alert: JQUERY NOT YET AVAILABLE - JQuery probably needs to be added to calling page.");
     } else {
-      console.log('%cALERT: JQUERY NOT YET AVAILABLE! Use this more widely.', 'color: red; background: yellow; font-size: 14px');    
+      console.log('%cALERT: JQUERY NOT YET AVAILABLE! JQuery probably needs to be added to calling page.', 'color: red; background: yellow; font-size: 14px');    
     }
   }
       
@@ -1442,6 +1449,7 @@ addEventListener("load", function(){
     return null;
   };
   document.querySelector("body").addEventListener('click', function(e) {
+    $(".hideOnBodyClick").hide();
     //consoleLog('click ' + Date.now())
     var anchor = getParentAnchor(e.target);
     if(anchor !== null) {

@@ -97,28 +97,28 @@ $(document).ready(function () {
 	}
 	
 	if(location.host.indexOf('localhost') >= 0) {
-		console.log("Loaded Harmonized System (HS) codes");
+		console.log("Loaded Harmonized System (HS) codes - harmonized-system.txt");
 	}
 
-    // This avoids cross domain CORS error
-    d3.text(local_app.community_data_root() + 'global/hs/harmonized-system.txt').then(function(data) {
-        let catLines = d3.csvParseRows(data);
-        //alert(catLines.length)
-        for(var i = 0; i < catLines.length; i++) {
-            catArray.push([catLines[i][0], catLines[i][1]]);
-        }
+    loadScript(local_app.modelearth_root() + '/localsite/js/d3.v5.min.js', function(results) {
 
-        /*
-        catLines.forEach(function(element) {
-          
-          //catArray.push([element.substr(0,4), element.substr(5)]);
-          catArray.push([element[0], element.[1]]);
+        // This avoids cross domain CORS error
+        d3.text(local_app.community_data_root() + 'global/hs/harmonized-system.txt').then(function(data) {
+            let catLines = d3.csvParseRows(data);
+            //alert(catLines.length)
+            for(var i = 0; i < catLines.length; i++) {
+                catArray.push([catLines[i][0], catLines[i][1]]);
+            }
+
+            //catLines.forEach(function(element) {
+            //  //catArray.push([element.substr(0,4), element.substr(5)]);
+            //  catArray.push([element[0], element.[1]]);
+            //});
+            ////$('#mainCats > div:nth-child(11)').trigger("click"); // Specific category
+
+            productList("01","99","Harmonized System (HS) Product Categories")
+
         });
-        //$('#mainCats > div:nth-child(11)').trigger("click"); // Specific category
-        */
-
-        productList("01","99","Harmonized System (HS) Product Categories")
-
     });
 
     /*
@@ -185,7 +185,7 @@ $(document).ready(function () {
        	//$(".fieldSelector").hide();
         event.stopPropagation();
     });
-    $('#mapButton').click(function () {
+    $(document).on("click", "#mapButton", function(event) {
 		if ($('#mapPanel').css('display') === 'none') {
         	$('#mapPanel').show();
     	} else {
@@ -194,15 +194,17 @@ $(document).ready(function () {
        	$("#introText").hide();
         event.stopPropagation();
     });
-    $('#topPanel').click(function () {
+    $(document).on("click", "#topPanel", function(event) {
     	event.stopPropagation(); // Allows HS codes to remain visible when clicking in panel.
     });
 
     $('#mainCats > div').each(function(index) { // Initial load
     	$(this).attr("text", $(this).text());
     });
-    $('#catSearch').click(function () {
+    $(document).on("click", "#catSearch", function(event) {
+        alert("#catSearch click - #toppanel has been deactivated and moved to map/index-categories.html")
     	if ($('#topPanel').css('display') === 'none') {
+            
 			$('#productSubcats').css("max-height","300px");
 			$('#topPanelFooter').show();
         	$('#topPanel').show();
@@ -248,10 +250,18 @@ $(document).ready(function () {
        	$(".fieldSelector").hide();
        	event.stopPropagation();
     });
-    
+    // $(document).on("click", ".filterClick", function(event) { // Does not work here, perhaps jquery is not loaded prior to DOM.
+    $(".filterClick").click(function(e) {
+        //alert(".filterClick")
+        console.log("temp close #rightTopMenu - use function instead")
+        $('#rightTopMenu').hide(); // Temp here, call the function that closes open menus instead. Where is it?
+    });
 
-    $("#filterClickLocation").click(function(event) {
-    	//let hash = getHash();
+    // Odd: $(document).on("click" does not work here, perhaps jquery is not loaded prior to DOM.
+    // But why would surrounding $(document).ready work?
+    //$(document).on("click", "#filterClickLocation", function(event) {
+    $("#filterClickLocation").click(function(e) {
+        //let hash = getHash();
     	//if (!hash.mapview) {
     	//	// These will trigger call to filterClickLocation() and map display.
     	//	if (hash.state) {
@@ -262,7 +272,7 @@ $(document).ready(function () {
     	//} else {
     		filterClickLocation();
     	//}
-		event.stopPropagation();
+        //event.stopPropagation();
 	});
 	
 	$(".filterUL li").click(function(e) {
@@ -298,6 +308,7 @@ $(document).ready(function () {
         //alert("this.value " + this.value);
 
         goHash({'mapview':this.value,'state':''});
+
         /*
         if (this.value) {
             //$('#state_select').val("");
@@ -306,7 +317,6 @@ $(document).ready(function () {
         } else { // US selected
             goHash({'mapview':'country','state':''});
             //clearHash("state")
-            //$("#geoPicker").hide();
             //$("#industryListHolder").hide();
         }
         */
@@ -322,7 +332,6 @@ $(document).ready(function () {
 	    } else { // US selected
 	    	goHash({'mapview':'country','state':''});
 	    	//clearHash("state")
-	    	//$("#geoPicker").hide();
 	    	//$("#industryListHolder").hide();
 	    }
 	});
@@ -666,7 +675,6 @@ function filterClickLocation(loadGeoTable) {
 	//$("#filterFieldsHolder").hide();
 
 	$("#bigThumbPanelHolder").hide();
-	//$('.showApps').removeClass("active");
 	$('.showApps').removeClass("filterClickActive");
     let distanceFilterFromTop = 120;
     if ($("#filterLocations").length) {
@@ -706,9 +714,7 @@ function filterClickLocation(loadGeoTable) {
             console.log("filterClickLocation updatesHash state " + hash.state);
             updateHash({"state":hash.state});
         }
-        if (hash.mapview == "country") {
-			$("#geoPicker").show(); // Required for map to load
-		} else if (!hash.mapview) {
+        if (!hash.mapview) {
 			let currentStates = [];
 			if(hash.geo && !hash.state) {
 				let geos = hash.geo.split(",");
@@ -815,7 +821,6 @@ function locationFilterChange(selectedValue,selectedGeo) {
     }
 
     if (selectedValue == 'country') {
-    	$("#geoPicker").hide();
     	$(".stateFilters").hide();
     } else {
     	if (hash.state || hash.geo) {
@@ -1197,7 +1202,7 @@ function showTabulatorList(element, attempts) {
                 rowClick:function(e, row){
                     row.toggleSelect(); //toggle row selected state on row click
 
-                    console.log("row:");
+                    console.log("data row:");
                     console.log(row); // Single row component
                     console.log(e); // Info about PointerEvent - the click event object
 
@@ -1228,8 +1233,22 @@ function showTabulatorList(element, attempts) {
                             hash.geo = hash.geo.split(',').filter(e => e !== row._row.data.id).toString();
                         //}
                     }
-                    goHash({'geo':hash.geo});
-
+                    //alert("goHash 2");
+                    if(!hash.geo && row._row.data.jurisdiction) {
+                        if(row._row.data.jurisdiction == "Georgia") { // From state checkboxes
+                            // Temp, later we'll pull from data file or dropdown.
+                            row._row.data.state = "GA";
+                        }
+                        if (!row._row.data.state) {
+                            console.log('%cCANCEL To Do: add state abbreviation to data file, or pull from dropdown. ', 'color: green; background: yellow; font-size: 14px');
+                            goHash({'geo':'','locname':row._row.data.jurisdiction});
+                        } else {
+                            console.log('%cCANCEL To Do: add support for multiple states. ', 'color: green; background: yellow; font-size: 14px');
+                            goHash({'geo':'','locname':'','state':row._row.data.state});
+                        }
+                    } else {
+                        goHash({'geo':hash.geo});
+                    }
                     //var selectedData = geotable.getSelectedData(); // Array of currently selected
                     //alert(selectedData);
                 },
@@ -1321,7 +1340,7 @@ function showTabulatorList(element, attempts) {
         		    rowClick:function(e, row){
         		        row.toggleSelect(); //toggle row selected state on row click
 
-        		        console.log("row:");
+        		        console.log("the data row:");
         		        console.log(row); // Single row component
         		        console.log(e); // Info about PointerEvent - the click event object
 
@@ -1352,6 +1371,7 @@ function showTabulatorList(element, attempts) {
         		        		hash.geo = hash.geo.split(',').filter(e => e !== row._row.data.id).toString();
         		        	//}
         		        }
+                        //alert("goHash 1");
         			    goHash({'geo':hash.geo});
 
         		        //var selectedData = geotable.getSelectedData(); // Array of currently selected
@@ -1784,6 +1804,7 @@ $(document).ready(function () {
     }
     var catString = catTitle.replace(/ /g, '_').replace(/&/g, '%26');
     $("#bigThumbPanelHolder").hide();
+    $(".showApps").removeClass("filterClickActive");
     console.log("catList triggers update");
     //$("#catSearch").val(catString);
     //$("#dataList").html(""); // Clear
@@ -1979,7 +2000,7 @@ function displayBigThumbnails(attempts, activeLayer, layerName) {
 
 	if (!$('.bigThumbUl').length) {
         if (!activeLayer) {
-            activeLayer = "industries"; // Since Tab defaults to "Local Industries". Will change to site-wide search later.
+            activeLayer = "industries"; // Since Tab defaults to "Local Topics". Will change to site-wide search later.
         }
         if (attempts > 100) {
             alert("EXIT load localObject.layers");
@@ -2122,10 +2143,12 @@ function displayBigThumbnails(attempts, activeLayer, layerName) {
 		$("#bigThumbPanelHolder").show();
 	} else {
 		$("#bigThumbPanelHolder").hide();
+        $(".showApps").removeClass("filterClickActive");
 	}
 
 	$('.bigThumbHolder').click(function(event) {
-        $("#bigThumbPanelHolder").hide(); // Could remain open when small version above map added.         
+        $("#bigThumbPanelHolder").hide(); // Could remain open when small version above map added. 
+        $(".showApps").removeClass("filterClickActive");        
     });
     if (activeLayer) {
     	$(".bigThumbMenuContent[show='" + activeLayer +"']").addClass("bigThumbActive");
@@ -2287,7 +2310,8 @@ function initSiteObject(layerName) {
 						});
                         
           				$("#bigThumbPanelHolder").hide();
-          				$('.showApps').removeClass("active");
+                        $(".showApps").removeClass("filterClickActive");
+          				$('.showApps').removeClass("active"); // Still needed?
 
           			} else {
           				console.log("call showThumbMenu")
@@ -2297,7 +2321,7 @@ function initSiteObject(layerName) {
           				$("#appSelectHolder .select-menu-arrow-holder .material-icons:first-of-type").hide();
           				$("#appSelectHolder .select-menu-arrow-holder .material-icons:nth-of-type(2)").show();
 
-          				$("#showAppsText").text("Local Industries");
+          				$("#showAppsText").text("Local Topics");
           				$("#appSelectHolder .showApps").addClass("filterClickActive");
 						showThumbMenu(hash.show);
                         $('html,body').animate({
@@ -2426,6 +2450,15 @@ function hashChanged() {
 	} else {
         //$(".locationTabText").text("United States");
     }
+    if (hash.mapview == "earth") {
+        $("#state_select").hide();
+    } else if (hash.mapview == "country") {
+        $("#geoPicker").show(); // Required for map to load
+        $("#state_select").show();
+    } else if (hash.mapview == "state") {
+        $("#state_select").show();
+    }
+
 	if (hash.show != priorHash.show) {
 		//if (hash.show == priorHash.show) {
 		//	hash.show = ""; // Clear the suppliers display
@@ -2626,7 +2659,10 @@ function hashChanged() {
 			$(".regionFilter").show();
 			$(".geo-US13").show();
 		}
-		if (hash.state && hash.state.length == 2) {
+        if(location.host.indexOf('localhost') >= 0) {
+            //alert("localhost hash.state " + hash.state);
+        }
+		if (hash.state && hash.state.length == 2 && !($("#filterLocations").is(':visible'))) {
             $(".locationTabText").text($("#state_select").find(":selected").text());
 		} else {
 			$(".locationTabText").text("Locations");
@@ -2870,7 +2906,6 @@ function hashChanged() {
     	//alert("hash change view")
     	//$(".stateFilters").show();
     	//$("#filterLocations").show();
-    	//$("#geoPicker").show();
     	//$("#geomap").show(); // To trigger map filter display below.
     	if (hash.mapview) {
     		//alert("render1")

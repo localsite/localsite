@@ -86,7 +86,6 @@ p {
 h1,h2,h3,h4 {
   font-family: Raleway;
   line-height: 1.5;
-  overflow: auto;
 }
 h2, h3, h4 {
     font-family: 'PT Sans', sans-serif;
@@ -393,12 +392,24 @@ summary::-webkit-details-marker {
     float:none;
   }
 }
-
+.roundedCorners {
+  border-radius: 20px;
+}
+.floatLeft {
+  float:left;
+  margin-right:40px;
+}
 .floatRight {
   float:right;
   margin-left:40px;
 }
 @media (max-width: 800px) {
+  .floatLeft {
+    float:none !important;
+    width:100% !important;
+    margin-right:0px;
+    margin-bottom:40px;
+  }
   .floatRight {
     float:none !important;
     width:100% !important;
@@ -528,7 +539,7 @@ content .js, pre code { /* Prevents .js from impacting js class within Drupal bo
     background-color: transparent;
     border: 1px solid transparent;
     padding: 0.375rem 1rem;
-    font-size: 0.9375rem;
+    /* font-size: 0.9375rem; Made too small on ppe */
     line-height: 1.5;
     border-radius: 2rem;
     -webkit-transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
@@ -598,7 +609,7 @@ content .js, pre code { /* Prevents .js from impacting js class within Drupal bo
 .btn-white:hover {
     background-color: #b9da79;
     border-color: #b9da79;
-    color: #fff;
+    color: #fff !important;
 }
 .btn-white:link, .contentpadding .btn-white:link {
   color: #333;
@@ -668,6 +679,9 @@ content .js, pre code { /* Prevents .js from impacting js class within Drupal bo
   margin:6px 6px 11px 22px;
   font-size:18px;
   color:#444;
+  /* If code appear instead of x, check if some other font is being applied. Try activating this line to fix (copied from an x that worked).
+  font-family: 'Nunito Sans', Lato, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  */
 }
 .close-X-sm:hover {
   color:#777;
@@ -909,9 +923,18 @@ content .js, pre code { /* Prevents .js from impacting js class within Drupal bo
   font-size: 22px;
 }
 .headerbar {
-  background:#fff;
+  background-color: rgb(230 230 230/50%);
   pointer-events: auto;
 }
+/* Seems that brave darkmode ignores the use of prefers-color-scheme: dark */
+@media (not (prefers-color-scheme: dark)) {
+  .headerbar {
+    background: #fff;
+    border-bottom: 1px solid rgb(238,238,238/95%); /* #eee */
+    border-bottom: 1px solid rgb(238,238,238);
+  }
+}
+
 .headerbarhide {
   display: none !important;
 }
@@ -1099,4 +1122,29 @@ content .js, pre code { /* Prevents .js from impacting js class within Drupal bo
 }
 .level2 div:last-of-type {
   border-bottom: 0px #fff solid !important;
+}
+.two-wide {
+  overflow: hidden;
+  margin-right: 0px;
+}
+.two-wide div {
+  float:left;
+  width:33.3%;
+}
+.two-wide div img {
+  width: 100%;
+  padding-right:12px;
+  padding-bottom:12px;
+}
+@media (max-width: 1400px) {
+  .two-wide div {
+    width: 50%;
+    max-width: 1000px;
+  }
+}
+@media (max-width: 800px) {
+  .two-wide div {
+    width: 100% !important;
+    clear: none !important;
+  }
 }

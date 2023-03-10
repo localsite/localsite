@@ -5,7 +5,89 @@
     height: 85vh;
     width: 100%;
   }
-  
+  #mapList1Holder {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 400px;
+    max-width: 400px;
+    height: 85%;
+    background-color: #666;
+    color: #fff;
+    z-index: 1000;
+    border-radius: 20px;
+  }
+  #mapList1Header {
+    background-color:#111;
+    padding:10px;
+    border-bottom: 1px solid #777;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+  }
+  #mapList1 {
+    position: absolute;
+    top: 32px;
+    bottom: 0px;
+    width: 100%;
+    padding: 6px;
+    background-color: rgb(44, 44, 44);
+  }
+  #mapList1 a:link, #mapList1 a:visited {
+    color: #66CF79;
+    text-decoration: none;
+  }
+  #mapList1 a:link:hover, #mapList1 a:visited:hover {
+    text-decoration: underline;
+  }
+  #mapList1 .detailTitle {
+    overflow: auto;
+    font-size: 16px;
+    margin-top: -4px;
+    padding-bottom: 8px;
+  }
+  #mapList1 .detailLinks {
+    display: none;
+  }
+  #mapList1 .detail {
+    background-color: #666;
+    border-radius: 20px;
+    padding: 10px;
+    margin-bottom: 2px;
+    position: relative;
+    border-bottom: 1px solid #777;
+  }
+  #mapList1 .detail:hover {
+    background-color: #555;
+  }
+  #mapList1 .detailLocation {
+    font-size:11px;
+  }
+
+  .always-show-scroll {
+    overflow-y: scroll;
+    overflow-x: hidden;
+  }
+  .always-show-scroll::-webkit-scrollbar {
+    background-color: #666;
+    border-left: 1px solid #777;
+    border-radius: 10px;
+    width: 16px;
+  }
+  /* Thumb (scrolling part) */
+  .always-show-scroll::-webkit-scrollbar-thumb {
+    background-color: grey;
+    border-radius: 8px;
+    border: 1px solid #aaa;
+    margin-top: 2px;
+    margin-bottom: 2px;
+  }
+  .always-show-scroll::-webkit-scrollbar-thumb:vertical {
+    height: 40px !important;
+    width: 10px;
+    margin: 4px;
+  }
+
+
   .leaflet-touch .leaflet-bar {
      border:none;
      margin-left:30px;
@@ -99,7 +181,7 @@
     position: relative;
   }
   #hublist {
-    overflow: auto;
+    overflow: auto; /* allows Expand button to remain at bottom */
     width:56%;
   }
   #mapHolder {
@@ -112,33 +194,37 @@
     position: relative;
     float:right;
   }
-  .detail {
+  #detaillist .detail {
     position: relative;
     padding: 12px 8px 12px 12px;
     border: 1px solid #eee;
     border-bottom: 1px solid #eee;
     border-radius: 20px;
   }
-  .detail:hover {
-    background-colorX: #fcfcfc;
-    background-colorX: #ccc;
+  #detaillist .detail:hover {
+    background-color: rgb(250, 250, 250, 0.3);
     border: 1px solid #fff;
     cursor:pointer;
   }
-  .detailActive {
+  #detaillist .detailActive {
     borderX: 1px solid rgb(204, 204, 204);
     background-color: rgb(250, 250, 250);
     paddingX: 12px;
   }
-  .detailActive:hover {
+  #detaillist .detailActive:hover {
     background-color: rgb(250, 250, 250);
   }
-  .detailCurrent {
-    padding: 0px;
+  #detaillist .detailCurrent {
+    paddingX: 0px;
   }
-  .detailCurrent:hover {
+  #detaillist .detailCurrent:hover {
     background-color: none;
     cursor: auto;
+  }
+  #detaillist .detailTitle {
+    font-size:20px;
+    font-weight:400;
+    color:#333;
   }
 
   .popMenu {
@@ -151,7 +237,8 @@
     right:0px;
   }
   #listingMenu {
-    
+    color: rgb(51, 51, 51);
+    margin-top: 10px;
   }
   #listingMenu > div {
     padding: 6px 30px 6px 30px;
@@ -161,6 +248,7 @@
   }
   .showItemMenu {
     font-size: 24px;
+    margin-top: -24px;
     cursor: pointer;
   }
   .showItemMenu:hover {
