@@ -79,114 +79,61 @@ function removeFrontMenuFolder(path) {
 
 
 function initMenu(partnerMenu) {
-	//let layerName = partnerMenu.layerName;
-	//let hash = getHash();
-	//if(location.host.indexOf('localhost') >= 0) {
-	    // Greenville:
-	    // https://github.com/codeforgreenville/leaflet-google-sheets-template
-	    // https://data.openupstate.org/map-layers
 
-	    let layerJson = partnerMenu.layerJson; 
-	    //console.log(layerJson);
+    // Used by Open Footprint navigation
 
-	    //alert("layerJson: " + layerJson);
-	    $.getJSON(layerJson, function (data) {
-            displaypartnerCheckboxes(partnerMenu, data);
-	    	/*
-	        dp.data = readJsonData(data, dp.numColumns, dp.valueColumn);
-	        processOutput(dp,map,map2,whichmap,whichmap2,basemaps1,basemaps2,function(results){
-	          callback(); // Triggers initialHighlight()
-	        });
-	        */
-            //console.log("initMenu() fetched menu for div " + partnerMenu.menuDiv);
-	    });
+    // Greenville - Pull data from a public Google Sheet and create a Leaflet Map and shareable GeoJSON
+    // https://github.com/codeforgreenville/leaflet-google-sheets-template
+    // Samples: https://data.openupstate.org/map-layers
 
-		$(document).on("click", partnerMenu.revealButton, function(event) {
+    let layerJson = partnerMenu.layerJson; 
+    //console.log(layerJson);
 
-  			console.log(partnerMenu.revealButton + ' click');
+    //alert("layerJson: " + layerJson);
+    $.getJSON(layerJson, function (data) {
+        displaypartnerCheckboxes(partnerMenu, data);
+    	/*
+        dp.data = readJsonData(data, dp.numColumns, dp.valueColumn);
+        processOutput(dp,map,map2,whichmap,whichmap2,basemaps1,basemaps2,function(results){
+          callback(); // Triggers initialHighlight()
+        });
+        */
+        //console.log("initMenu() fetched menu for div " + partnerMenu.menuDiv);
+    });
 
-  			//if ($("#bigThumbPanelHolder").is(':visible')) {
-  			//if($("#bigThumbPanelHolder").is(':visible') && isElementInViewport($("#bigThumbPanelHolder"))) {
-  			if($(partnerMenu.menuDiv).is(':visible')) {
+	$(document).on("click", partnerMenu.revealButton, function(event) {
 
-  				$(partnerMenu.menuDiv).hide();
+			console.log(partnerMenu.revealButton + ' click');
 
-  				
-  				//$("#appSelectHolder .select-menu-arrow-holder .material-icons").hide();
-  				//$("#appSelectHolder .select-menu-arrow-holder .material-icons:first-of-type").show();
+			//if ($("#bigThumbPanelHolder").is(':visible')) {
+			//if($("#bigThumbPanelHolder").is(':visible') && isElementInViewport($("#bigThumbPanelHolder"))) {
+			if($(partnerMenu.menuDiv).is(':visible')) {
 
-  				//$("#appSelectHolder .showAdminNav").removeClass("filterClickActive");
-  				//$("#showAdminNavText").text($("#showAdminNavText").attr("title"));
-  				//$(".hideWhenPop").show();
-  				//// To do: Only up scroll AND SHOW if not visible
-  				//$('html,body').animate({
-				//	scrollTop: 0
-				//});
+				$(partnerMenu.menuDiv).hide();
 
-  				//$("#bigThumbPanelHolder").hide();
-  				//$('.showAdminNav').removeClass("active");
 				
+				//$("#appSelectHolder .select-menu-arrow-holder .material-icons").hide();
+				//$("#appSelectHolder .select-menu-arrow-holder .material-icons:first-of-type").show();
 
-  			} else {
+				//$("#appSelectHolder .showAdminNav").removeClass("filterClickActive");
+				//$("#showAdminNavText").text($("#showAdminNavText").attr("title"));
+				//$(".hideWhenPop").show();
+				//// To do: Only up scroll AND SHOW if not visible
+				//$('html,body').animate({
+			//	scrollTop: 0
+			//});
 
-  				$(partnerMenu.menuDiv).show();
+				//$("#bigThumbPanelHolder").hide();
+				//$('.showAdminNav').removeClass("active");
+			
 
-  				/*
-  				$("#appSelectHolder .select-menu-arrow-holder .material-icons:first-of-type").hide();
-  				$("#appSelectHolder .select-menu-arrow-holder .material-icons:nth-of-type(2)").show();
+			} else {
 
-  				//$("#showAdminNavText").text("Goods & Services");
-  				//$("#appSelectHolder .showAdminNav").addClass("filterClickActive");
-				//showThumbMenu(hash.show, adminNavObject);
-				displaypartnerCheckboxes(partnerMenu,adminNavObject);
-                $('html,body').animate({
-                	//scrollTop: $("#bigThumbPanelHolder").offset().top - $("#headerbar").height() - $("#filterFieldsHolder").height()
-                });
-				*/
-  			}
-  			
-		  	event.stopPropagation();
-		});
-
-	    /*
-	    let adminNavObject = (function() {
-	        let json = null;
-	        $.ajax({
-	            'type': 'GET',
-	            'async': true,
-	            'global': false,
-	            'url': layerJson,
-	            'jsonpCallback': 'callback',
-	            'dataType': "jsonp",
-	            'success': function (adminNavObject) {
-	                consoleLog("Menu layers json loaded within initMenu. location.hash: " + location.hash);
-	                
-	                // adminNavObjectFunctions(adminNavObject); // could add to keep simple here
-	                alert("success1")
-	                displaypartnerCheckboxes(partnerMenu,adminNavObject);
-
-	                
-	          		// These should be lazy loaded when clicking menu
-	                //displayBigThumbnails(0, hash.show, "main",adminNavObject);
-	                //displayHexagonMenu("",adminNavObject);
-	                
-	                if (!hash.show && !param.show) { // INITial load
-	                	// alert($("#fullcolumn").width()) = null
-	                	if ($("body").width() >= 800) {
-
-	                		//showThumbMenu(hash.show, adminNavObject);
-	                	}
-	            	}
-	            	//return adminNavObject;
-	            },
-	          error: function (req, status, err) {
-	              consoleLog('Error fetching adminNavObject json!: ', err);
-	          }
-	        });
-	    })(); // end adminNavObject
-	    */
-	    
-	//}
+				$(partnerMenu.menuDiv).show();
+			}
+			
+	  	event.stopPropagation();
+	});
 
   $(document).on("click", partnerMenu.revealButton, function(event) {
   	console.log("showPartnerMenu " + partnerMenu.revealButton);
@@ -283,11 +230,10 @@ function showSubmenu(id) { //onmouseclick
 }
 // For narrow nav
 function showMenuNav(id) { //onmouseenter
-    if ($(".sideMenuColumn").width() < 50) { // Only do rollover popout when side column is narrow.
+    if ($(".sideMenuColumn").width() <= 64) { // Only do rollover popout when side column is narrow.
         //console.log("showMenuNav " + id);
         $(".sideMenuColumn").addClass("sideMenuColumnNarrow"); // Adds black background
         $(".sideMenuColumn").removeClass("sideMenuColumnWide");
-        //return; // TEMP
         $("#" + id + " .layerSectionTitle").show();
     } else {
         $(".sideMenuColumn").addClass("sideMenuColumnWide");
@@ -301,7 +247,7 @@ function hideMenuNav(id) { //onmouseleave
 
     // BUGBUG - Need to check parent .sideMenuColumn since multiple instances may reside on page.
     // http://localhost:8887/localsite/partner-menu.html
-    if ($(".sideMenuColumn").width() < 50) { // Only hide when side is narrow.
+    if ($(".sideMenuColumn").width() <= 64) { // Only hide when side is narrow.
         //console.log("hideMenuNav " + id);
         // Check parent has narrow class
         const sideMenuColumnNarrow = $("#" + id + " .layerSectionTitle").closest(".sideMenuColumnNarrow");  
@@ -713,7 +659,7 @@ function displaypartnerCheckboxes(partnerMenu,menuDataset) { // For Layer Icon o
             return;
         }
     }
-    $('.partnerCheckboxes :checkbox').change(function () {
+    $('.partnerCheckboxes :checkbox').on('change', function () {
 
         if($(this).is(":checked")) { // Show Layer
             //$(this).parent().parent().find('.layerAction .layerActionIcon').css('color', '#3B99FC');

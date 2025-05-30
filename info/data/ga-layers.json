@@ -5,10 +5,10 @@ callback(
 		"menulevel": "1",
 		"item": "industries",
 		"rootfolder": "info",
-		"title": "Local Topics",
-		"tabtitle": "Local Topics",
-		"mobiletitle": "Local Topics",
-		"section": "Local Topics",
+		"title": "All Industries",
+		"tabtitle": "All Industries",
+		"mobiletitle": "All Industries",
+		"section": "All Industries",
 		"provider": "Admin",
 		"image": "/localsite/img/show/industries.jpg",
 		"siteHeaderHeight": "10px",
@@ -80,7 +80,7 @@ callback(
 		"topnavaccess": "10",
 		"menuaccess": "0",
 		"directlinkX": "/localsite/map/#show=smart",
-		"directlink": "/community/projects/#state=GA&show=smart",
+		"directlink": "/io/communities/#state=GA&show=smart",
 		"states": "GA"
 	},
 	{
@@ -139,9 +139,6 @@ callback(
 		"siteHeaderHeight": "170px",
 		"headericoncolor": "#999",
 		"icon": "<i class='fa fa-recycle'></i>",
-		"mainiframeX": "/localsite/map/recycling/ga/",
-		"directlinkX": "/localsite/map/#show=recycling",
-		"directlinkX": "/localsite/map/recycling/ga/",
 		"footerlogos": "",
 		"caption": "",
 		"states": "GA"
@@ -149,7 +146,7 @@ callback(
 	{
 		"menulevel": "1",
 		"item": "farmfresh",
-		"rootfolder": "info",
+		"rootfolder": "map",
 		"title": "Farm Fresh",
 		"tabtitle": "Farm Fresh",
 		"mobiletitle": "Farm Fresh",

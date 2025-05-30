@@ -1,201 +1,137 @@
-# Getting Started  
-
-[View Community Pages](https://model.earth/apps/)  
-You can use these steps to create a website with free GitHub hosting  
-
-<!--
-	Not using curretnly, made a physcial copy instead
-	https://github.com/ModelGeorgia/io/compare/master...modelearth:master
-
-	Removed domain model.georgia.org from GitHub pages.
-
-	https://github.com/modelearth/localsite/compare/master...localsite:master
-
-	Georgia Data
-	https://github.com/GeorgiaData/io/compare/master...modelearth:master
-	https://github.com/GeorgiaData/localsite/compare/master...modelearth:master
--->
-
-### The following can be used to host a custom page within the "apps" repo
-
-1. First, fork the [localsite repo](https://github.com/modelearth/localsite), the [apps repo](https://github.com/modelearth/apps), and the [io repo](https://github.com/modelearth/io).  Turn on [GitHub Pages](#github-pages) for each repo.  
-After a few minutes, you can view your fork at [[your account].github.io/apps](https://modelearth.github.io/apps)  
-2. [Activate a webroot](#webroot) on your local computer for [http://localhost:8887](http://localhost:8887/)
-3. Then [clone the three forked repos](#clone) into the same local webroot folder.
-4. Copy the [base page folder](../../apps/base/) locally, change parameters and deploy your updates.
-5. [Fetch upstream](#fetch-upstream) changes to your forked repos.
-6. [Point a domain](#domain) at your repos (optional)
-
-Here are details for the steps above...<br><br>
-
-
-# Local Webroot Setup
-
-
-<section id="github-pages"></section>
-
-## 1. Fork repos and turn on Github Pages 
-
-Clone forks of the parent repos so you can review your changes online before submitting a pull request (PR).  
-Click the "Fork" button in the upper right of each of the following pages:   
-
-[localsite repo](https://github.com/modelearth/localsite)
-[io repo](https://github.com/modelearth/io)
-[apps repo](https://github.com/modelearth/apps)
-
-Activate GitHub Pages for each of your forked repos by going to "Settings > Pages" and choosing "main" (or master) then save.
-
-<div style="border:1px solid #ccc; padding:15px; display:inline-block; margin-bottom:20px">
-<img src="img/github-pages.png">
+<div class="showGit">
+<a href="https://model.earth/community/start/">View current GitHub page as a web page</a>
 </div>
 
-IMPORTANT: DO NOT SELECT A THEME - The Jekyll theme will break the modular site integration.  
+<h1 style="font-size:32px">Starter Samples</h1>
 
-Wait a few minutes for a new GitHub Pages site to become available at a link in the following format:
+### Localsite Setup and Development
 
-https://[your account].Github.io/[repo name]  
+[How to add a new localsite page](template).  View our [Active Projects](../../projects) and [Moonshots](../../community/projects).
 
-<section id="webroot"></section>
-
-## 2. Activate a webroot folder on your computer
-
-The following will allow you to launch [http://localhost:8887/localsite/](http://localhost:8887/localsite/).&nbsp; You'll view multiple repos in the same webroot.
-
-Create a web root folder called "webroot" or "modelearth", or use your existing web root.  
-Go to the web root folder and run the following to view pages locally at http://localhost:8887  
-
-	python -m http.server 8887
-
-You can run the command above to start localhost whenever you restart your computer.
-If that dose't work, here are more options for [activating your webroot](activate-webroot).
+Helpful tips for [Node, Python, pyenv, Conda and Docker](../../io/coders/python/).
 
 
-<section id="clone"></section>
+## <span class="num">1</span><span class="txt">Site Install - Code globally, run locally</span>
 
-## 3. Clone forked repos into your webroot
+<a href="../../localsite/start/steps/">Site Install</a> - Contribute to apps for local industry comparisons and government optimization.
+<!--
+&bullet; <a href="/apps/">Our Apps Folder</a> - Customize JQuery pages
+&bullet; <a href="../challenge/">Sustainable Communities Web Challenge</a><br>
+&bullet; <a href="../challenge/how/">How to Create a Local Site Page</a><br>
+--> 
 
-Now go to [your github account](https://github.com) and clone the forked repos listed above.
+<a href="../../localsite/start/steps/" class="btn btn-success">Start Site Install</a>
 
-To clone, click the green "Code" button followed by "Open in GitHub Desktop."
+## <span class="num">2</span><span class="txt">Input-Output Widgets</span>
+<a href="../../io/charts/">Contribute to Impact Widgets</a> - Display based on [localsite parameters](../) 
+Data from the US EPA and NAICS, Exiobase, Google Data Commons - [Data Pipelines](/data-pipeline/)
 
-Save the clone in the webroot folder you created in step 1.  
+## <span class="num">3</span><span class="txt">Integrate Machine Learning</span>
+Contribute to our machine learning [RealityStream](../../realitystream/)
+Contribute to UN goal data visualizations in our <a href="/data-commons/docs/data/">Google Data Commons Timelines</a>
 
-A static page should now be visible at [http://localhost:8887/localsite/](http://localhost:8887/localsite/)  
-
-Also clone the <a href='https://github.com/modelearth/io/'>io repo</a> into the same webroot to include the input-output widgets. [Learn more](../../../io/charts/)    
-
-Also clone the <a href='https://github.com/modelearth/apps/'>apps repo</a> if you are making a custom page.  
-
-To redirect into a repo, you can place an index.html file in your webroot with the following:  
-
-	<script language="JavaScript">window.location="localsite/"</script>
+## <span class="num">4</span><span class="txt">Chart Starter Ideas</span>
+[Chart Starters](../../community/start/charts) - Chord, Sankey, USEEIO Heatmap Mosaic and Input-Output Flow
 
 
-## 4. Deploy your updates
+## <span class="num">5</span><span class="txt">Map Samples</span>
+[Leaflet Map Layers](../../community/start/maps#geoview=state&state=CA) with Tabulator grid data views
 
-Deploy your updates using GitHub. If you are not a project collaborator, GitHub Desktop will prompt you to create a project fork on GitHub. Place a pull request when your updates are ready for review.  
+## <span class="num">6</span><span class="txt">Country and State IO Models</span>
+
+Environmentally Extended Input-Output (EEIO)
+
+[World Trade Profiles](../../profile/trade/)
+[State Impact Reports](../../useeio.js/footprint/)
+[Inflow-Outflow Widgets](../../io/charts)
 
 <!--
-- <a href='https://github.com/modelearth/io'>io</a> - overview
-- <a href='https://github.com/georgiadata/smartdata'>smartdata</a> - data
+[USEEIO Model Components](https://github.com/USEPA/useeior/blob/master/format_specs/Model.md) - RStudio
 
-A 404 error will occur for the private smartdata folder if you are not a collaborator. 
+
+[USEEIO API](https://github.com/usepa/useeio_api/)
+[USEEIO Python and R Examples](../../community/resources/useeio)
+
+The API is NOT used directly for websites.
+Instead, a static .json version of the API is loaded from files in [model.earth/io/build/api](https://github.com/ModelEarth/io/tree/main/build/api) and our [profile](http://model.earth/profile) repo.
+-->
+
+## <span class="num">7</span><span class="txt">JAM Stack Resources</span>
+
+[Using GitHub as a Data Lake](https://dzone.com/articles/using-github-as-a-data-lake)  
+[YAML is cool - Alternative to json for config settings](https://www.educative.io/blog/yaml-tutorial)
+[Publiccode.yaml file for your GitHub repo metatags](https://github.com/publiccodeyml/publiccode.yml)
+[Headless Content Management Systems for JAMstack Sites](https://jamstack.org/headless-cms/)
+[StackBlitz.com](https://stackblitz.com/) - Like Code VS, but in a browser. React TS, Angular, Svelte, Javascript - Nice UI!  
+[AWS 10-Minutue Tutorials](https://aws.amazon.com/getting-started/tutorials/?awsf.getting-started-content=use-case-tmt%23websites-apps) - [Serverless with Cloud9](https://aws.amazon.com/getting-started/tutorials/build-serverless-app-codestar-cloud9/?trk=gs_card) - Collaborative integrated development environment (IDE)
+
+<!--
+[Netlify Gatsby Starter](https://github.com/netlify-templates/gatsby-starter-netlify-cms) - [Gatsby](https://www.gatsbyjs.org/)    
+
+**VueJS**  
+[Element Table](https://element.bootstrap-table.com/examples/)  
+[Build a Vue App with Google Firebase Authentication and Firestore Database](https://blog.bitsrc.io/build-a-vue-app-with-firebase-authentication-and-database-e7d6816f79af)  
+[Frappe/ERPNext](https://frappe.io/frappejs/docs/client/index.md), 
+[VuePress](https://vuepress.vuejs.org/), 
+[Gridsome](https://gridsome.org/), 
+[Nuxt](https://nuxtjs.org/).&nbsp;  
+
+**Google Flutter**  
+[Flutter - apps for mobile, web and desktop](https://flutter.dev/)  
+[Flutter/Dart samples in HTML](https://gallery.flutter.dev/)
+-->
+
+
+
+## <span class="num">8</span><span class="txt">Related Life Cycle Material</span>
+
+<!--
+There is growing trend across industry to trace the entire supply chain. 
+Responsible sourcing allows manufacturers to...
+-->
+
+[EXIOBASE](https://www.exiobase.eu/) - Environmentally Extended World Trade Data
+[Sustainable Materials Management](https://www.epa.gov/smm) - US EPA
+[Challenge.gov](https://www.challenge.gov) - Web Challenges created by US Government Agencies
+[OpenLCA](https://www.openlca.org/) - Downloadable app for Life Cycle Assessment
+[OECD - Organization for Economic Co-Operation and Development](https://www.oecd.org/sti/ind/measuring-trade-in-value-added.htm) - France
+[Leyla Acaroglu on Life Cycle Assessment](https://medium.com/disruptive-design/a-guide-to-life-cycle-thinking-b762ab49bce3)
+[Knoema Infographics](https://knoema.com/infographics) - [Data Coverage Matrix](https://knoema.com/atlas/matrix) - Global models which could be reproduced locally.  
+[World Input-Output Database (WOID)](http://www.wiod.org/otherdb)  
+[IMPLAN Impact Analysis](https://implanhelp.zendesk.com/hc/en-us/articles/360039284273-Environmental-Data) - 8 broad categories using USEEIO model data
+
+## <span class="num">9</span><span class="txt">Collaboration and Teaching</span>
+
+[Join in our weekly coding meetups](/io/coders/)
+
+
+[Use our Lifecycle Tools for Research and Teaching](/io/learn/)
+Explore [the matrix](/io/about/matrix/) and tinker with our [Footprint Javascript](/useeio.js/footprint/)
+
+<!-- 
+Expensive European Exiobase
+https://simapro.com/products/exiobase-database/-->
+
+<!-- GEOD - Global Economic Open Database  -->
+<!--
+[Recycling and Resource Recovery as a Tool for Regional Economic Development](https://www.epa.gov/smm/sustainable-materials-management-smm-web-academy-webinar-recycling-and-resource-recovery-tool) - Webinar: Nov 20, 2019, 1PM  
 -->
 
 <!--
-## 4. Update markdown pages
+USCSD Materials Marketplace - Seems to be members only. Wes has a contact that worked on it.
+https://usbcsd.org/materials
 
-Add notes and links in the README.md files which are pulled into index.html pages.  
+Southern Regional Science Association
+http://www.srsa.org/
 
-- [Bioeconomy Planner - BEA](../../bea)  
-- [Industry Impact](../../industries)  
-- [Localization - Places](../../places)  
--->
 
-<!--
-## 5. Update dataset layouts
-
-Use a Google Sheet or CSV file to [prototype a list or chart](../dataset) and update [EEIO Widgets](https://model.earth/io/charts/) that load from JSON files generated by the USEEIO API.  
--->
-
-<!--
-1. [Set up crowdsourced editing](../../../crowdsource/editor) of data for lists and maps.
-
-1. Copy the "starter" folder inside community and give it the name of your community or module.
+https://joulebug.com/
 -->
 
 
-**Mac Users:** To avoid commiting your local .DS\_Store files to GitHub, you can run the following to ignore .DS\_Store files during commits forever. The .DS\_Store files will continue to set icon sizes in your local file manager.   
- 
-<!-- Avoid .DS_Store file creation over network connections (article from 2011, confirm this still occurs)
-	https://support.apple.com/en-us/HT1629 -->
-	git config --global core.excludesfile ~/.gitignore  
-	echo .DS_Store >> ~/.gitignore
+<!-- 
 
-If you encounter the error "xcrun: error: invalid active developer path", [install the Xcode toolkit](https://ma.ttias.be/mac-os-xcrun-error-invalid-active-developer-path-missing-xcrun/) first.  
-
-You can view hidden files by toggling Command+Shift+Dot. Note that .DS_Store will not be displayed.<br>
-To fix a conflict you may need delete the .DS_Store within the Github.com website.  
-
-
-<section id="fetch-upstream"></section>
-
-## 5. Fetch upstream changes to your forked repos
-
-Occasionally merge in updates from parent repos by clicking "Fetch Upstream > Fetch and Merge" in GitHub.
-
-<!--
-In the old days you had to do the following:
-
-- On your forked repo: Click Compare 
-- Flip the order. (Pick a third repo temporarily because if the two match a warning occurs.)
-- Create pull request > Give the pull request a title 
-- Create pull request (again) 
-- Merge pull request (scroll down) > Confirm merge.  
-
-[Images of steps for updating your fork](https://stackoverflow.com/questions/20984802/how-can-i-keep-my-fork-in-sync-without-adding-a-separate-remote/21131381#21131381)
-
+Create a Sankey chart with a return flow:
+https://www.sciencedirect.com/science/article/pii/S0921344917301167
 -->
-
-<section id="domain"></section>
-
-## 6. Point a domain at your repos (optional)
-
-You can point a domain at all the repos in your Github account with the steps below.  
-
-
-- Use CloudFlare.com as a free proxy for your domain name - [setup steps](cloudflare/) - [more about Cloudflare with GitHub](https://www.toptal.com/github/unlimited-scale-web-hosting-github-pages-cloudflare). AWS can also be used.  
-- Important: If you are using the same domain for Google email accounts, avoid adding the 4 Google A records (these prevent adding the CNAME record). You'll only need to add the 5 MX records provided by Google.  
-- Create a repo in your primary account matching the name of the account: [github username].github.io  
-- Click settings and activate GitHub Pages for your [github username].github.io and each repo that will be an additional subfolder in your site. (This requires also doing the Special Trick below.)  
-- Add your custom domain name to the root repo called [github username].github.io.  
-- Special Trick: When you add a CNAME record for your domain in CloudFlare use @ to indicate the root, and point a different secondary account in Github as [secondary github username].github.io. By using a secondary GitHub username, more than one adjacent repo folder will be accessible through your primary domain. (The "localsite" repo can then be forked and shared locally with your primary site.) 
-
-- Wait 2 to 10 minutes for new GitHub Pages site to become available.
-- Activate GitHub Pages for each additional repo residing within the primary account. These can be forks from other accounts.  
-- Avoid putting referenced files in your [github username].github.io root repo because it won't be the root of your site when you view on localhost.  
-- Fork the "[localsite](https://github.com/modelearth/localsite/)" repo into your GitHub account if you'd like to include it's functionality in any of your sites. Turn on GitHub pages to display at YourDomain.com/localsite/  
-
-
-## Additional Resources
-
-<a href="/localsite/">The Localsite Framework</a> is designed to allow multiple Github repos to communicate using hash values.  
-
-<a href="../../community/start/">View Starter Samples</a> - maps, charts, widgets.  <a href="../../io/coders/">Join us on Slack</a> for pointers.  
-
-Learn more about [JAM Stack Development](https://jamstack.org) - the process of creating fast sites using static pages with CSV files, JSON and APIs.  
-
-Edit online using [stackedit.io](https://stackedit.io/) and [Dillinger Markdown to HTML](https://dillinger.io/)  
-
-[AWS Amplify, and site hosting info](https://model.earth/aws/amplify/) - Azure, Firebase, GitHub Pages, Netlify and more.
-
----
-<br>
-
-[Edit the page above in Github](https://github.com/modelearth/localsite/blob/master/start/README.md) - [Edit in StackEdit](https://stackedit.io/app#providerId=githubWorkspace&owner=localsite&repo=localsite&branch=) - Click folder icon in upper right within StackEdit. ([Direct links are not yet available in StackEdit](https://community.stackedit.io/t/open-file-from-github-using-a-link/495))
-
-
-
-
-
 

@@ -6,9 +6,20 @@
     background-color: #fff;
     border-right: 1px solid #fff;
 }
+.dark .tabulator .tabulator-header .tabulator-col {
+   
+}
+.dark .tabulator-row {
+    background-color: transparent;
+}
 .tabulator-row .tabulator-cell {
     border-right: 1px solid #fff;
     border-bottom: 1px solid #ccc;
+}
+/* Enables scrolling when top row set with frozenRows */
+.tabulator-tableHolder {
+    overflow-x: scroll;
+    /* margin-bottom: -14px; cropped Hawaii */
 }
 .tabulator .tabulator-footer {
     background-color: transparent;
@@ -19,14 +30,23 @@
 }
 
 .tabulator-selectable:hover { /* rows */
-    background-color: #fafafa !important;
+    background-color: #eee !important;
+}
+.dark .tabulator-selectable:hover { /* rows */
+    background-color: #333 !important;
 }
 .tabulator-row.tabulator-selected {
     background-color: #ddd;
     border-bottom: 1px solid #999;
 }
+.dark .tabulator-row.tabulator-selected {
+    background-color: #111;
+}
 .tabulator-row.tabulator-selected:hover {
     background-color: #ccc !important;
+}
+.dark .tabulator-row.tabulator-selected:hover {
+    background-color: #000 !important;
 }
 .tabulator-header {
     max-height: 32px !important;
@@ -34,6 +54,9 @@
 #tabulator-sample .tabulatorBar div:nth-child(3) {
     height: 6px !important; /* narrower bars */
 }
+
+
+
 
 /* pass clicks through to row so hash change can set checkbox without re-triggering hash change */
 #tabulator-statetable .tabulator-row input[type='checkbox'] {
@@ -55,11 +78,14 @@
 }
 .tabulator-header .tabulator-col-title {
     font-weight: 400;
-    text-align: right;
+    text-alignX: right;
 }
 .tabulator-header .tabulator-col:first-of-type .tabulator-col-title {
     text-align: left;
 }
 .tabulator-header .tabulator-col:nth-of-type(2) .tabulator-col-title {
     text-align: left;
+}
+.tabulator .tabulator-header .tabulator-col {
+    background-color: #eee;
 }

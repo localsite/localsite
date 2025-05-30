@@ -12,17 +12,28 @@ Used in localsite, modelearth, io, neighborhood, trees
 */
 .showMobile, .showMobileWide {display:none;}
 .showGit {display:none;}
+.hideGit {display:inline-block;}
 .local, .localonly {
-  displayX:none !important; 
   background-image: linear-gradient(45deg, rgba(0,0,0,0.1) 25%, transparent 25%), linear-gradient(-45deg, rgba(0,0,0,0.1) 25%, transparent 25%), linear-gradient(45deg, transparent 95%, rgba(0,0,0,0.1) 75%), linear-gradient(-45deg, transparent 95%, rgba(0,0,0,0.1) 75%);
   background-size: 3px 3px;
+}
+.dark .local, .dark .localonly {
+  background-image: linear-gradient(45deg, rgba(250,250,250,0.1) 25%, transparent 25%), linear-gradient(-45deg, rgba(250,250,250,0.1) 25%, transparent 25%), linear-gradient(45deg, transparent 95%, rgba(250,250,250,0.1) 75%), linear-gradient(-45deg, transparent 95%, rgba(250,250,250,0.1) 75%);
 }
 .localonly {padding:20px; }
 svg{max-width:none;} /* Fix for embedding material icon map points in Drupal */
 
 @media (max-width: 800px) {
   .hideMobile {display:none;}
+  .hideNarrow {display:none;} /* Not activated when sideTabs displayed */
   .showMobile {display:inline-block !important;}
+}
+@media (max-width: 1800px) {
+  .bodyLeftMarginFull .hideMobileFull, .bodyLeftMarginList .hideMobileFull, .bodyMargin .hideMobileFull, .bodyRightMargin .hideMobileFull {display:none;}
+  .bodyLeftMarginFull .showMobileFull, .bodyLeftMarginList .showMobileFull, .bodyMargin .showMobileFull, .bodyRightMargin .showMobileFull {display:inline-block !important;}
+}
+@media (min-width: 801px) {
+  .showWide {display:inline-block !important;}
 }
 @media (max-width: 900px) {
   .hideMobileWide {display:none;}
@@ -32,350 +43,70 @@ html,body { /* both are needed for map height in iframe */
   height: 100%;
 }
 body {
+  background-color: rgb(250, 250, 250);
   margin: 0px;
   -webkit-font-smoothing: antialiased;
   font-family: 'Nunito Sans', Lato, 'Helvetica Neue', Helvetica, Arial, sans-serif;
   color: #333;
   line-heightX:0; /* prevents gaps betweet images, but 0 caused text to overlap on start and nav icons. */
 }
-.flexbody {
-  display: flex; /* for footer */
-  flex-direction: column; /* for footer */
+.dark {
+  color: #eee;
+  background-color: #333;
 }
-main, .flexmain {
-    flex-grow: 1; /* for footer */
+.bodyIconMargin {
+  margin-left: 64px;
 }
-header, main, .flexfooter {
-    flex-shrink: 0; /* prevent shrinking if content is larger than the screen. */
+.bodyLeftMargin {
+  margin-left: 220px;
 }
-
-table {
-  border-spacing: 0px;
+.bodyLeftMarginList {
+  margin-left: 380px;
 }
-td {
-  padding: 0px;
-  vertical-align: top;
+.bodyLeftMarginFull {
+  margin-left: 600px;
 }
-input {
-  /* padding-left:5px; */
-  /* margin-right:2px; */
-}
-input, select {
-  /* margin-bottom:8px; */
-}
-
-/*
-input, textarea {
-Creates gap on some image buttons. Might reactivate after search page graphic button and others changed.
-*/
-textarea {
-    /* border:solid 1px #777; */
-    border-color: rgb(238, 238, 238);
-}
-
-/* Lighter: #4091dd */
-p {
-  margin-top: 0px;
-  margin-bottom: 16px;
-  /*
-  font-family: 'Open Sans', 'Helvetica Neue', Arial, Helvetica, sans-serif;
-  font-family: "Raleway", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  */
-  font-sizeX: 15px;
-}
-h1,h2,h3,h4 {
-  font-family: Raleway;
-  line-height: 1.5;
-}
-h2, h3, h4 {
-    font-family: 'PT Sans', sans-serif;
-    font-family: Raleway, Lato, "Helvetica Neue", Helvetica, "Lato", sans-serif;
-}
-h1 {
-  font-weight: 300;
-  color: #444;
-  line-height: 1.3;
-  margin-top: 10px;
-  font-size: 31px;
-  font-family: "Amaze", "Helvetica Neue", Helvetica, "Lato", sans-serif;
-}
-.h1-home {
-  font-size: 28pt;
-  font-family: "Helvetica Neue", Helvetica, "Lato", sans-serif;
-  font-weight: 700;
-}
-h2 {
-  margin-top: 0px;
-  font-weight: 500;
-  font-weight: 800;
-  font-size: 1.4em;
-  padding-top: 12px;
-  padding-bottom: 5px;
-  border-bottom: 1px solid #ddd;
-  color: rgb(77, 82, 89);
-  color: #333;
-  overflow: auto;
-}
-h2::before { /* Avoids hashtag headbutting browser window */
-  display: block; 
-  content: " "; 
-  margin-top: -120px; 
-  height: 120px; 
-  visibility: hidden; 
-  pointer-events: none;
-}
-section::before { /* Avoids hashtag headbutting browser window */
-  display: block; 
-  content: " "; 
-  margin-top: -120px; 
-  height: 120px; 
-  visibility: hidden; 
-  pointer-events: none;
-}
-#footer .container section::before { /* Correct Drupal Footer */
-  margin-top: auto;
-  height: auto;
-}
-h3 {
-  font-weight: 600; 
-  font-size: 1.3em;
-  line-height: 1.3em;
-  margin-top: 20px;
-  margin-bottom: 16px;
-  color: #000;
-  font-family: "Amaze", 'PT Sans', sans-serif;
-}
-h4 {
-  margin-top: 20px;
-  font-weight: 600;
-  font-size: 1em;
-  line-height: 26px;
-  margin-top: 15px;
-  margin-bottom: 12px;
-  color: #333;
-}
-h5 {
-  font-weight: 300;
-  font-size: 1.1em;
-  margin-top: 20px;
-  margin-bottom: 10px;
-}
-h6 {
-  font-weight: 600;
-  font-size: 0.95em;
-  color: #333;
-  margin-top: 10px;
-  margin-bottom: 0px;
-}
-sup {
-  line-height: 0.8em;
-  font-size: 0.6em;
-}
-hr {
-    border: 0px;
-    border-top: 1px solid #ddd;
-}
-details {
-  display:inline;
-}
-summary { /* a button */
-  display: inline;
-  padding:0 5px;
-  floatX:left;
-  margin-right:8px;
-  border: 1px solid #ccc;
-}
-summary::-webkit-details-marker {
-  display: none
-}
-@media print 
-{
-  .noprint {display: none; }
-  /*
-  body{margin-top:30px; color: #000; }
-  */
-}
-@media screen {.printonly {display: none; }}
-
-
-.table-cell, .table-cell-mobile {
-  display: table-cell;
-  vertical-align: top;
-  position: relative; /* Allows menu rollover/popups to overlap adjacent cell */
-}
-@media (max-width: 800px) {
-  .table-cell {
-    display: block;
-    float: left;
+@media (max-width: 1000px) {
+  .bodyLeftMargin #locationFilterHolder #filterLocations {
+    padding-left: 30px;
   }
 }
-
-.row {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-}
-.column {
-  /* display: flex; */
-  flex-direction: column;
-  flex-basis: 100%;
-  flex: 1;
-  overflow: auto;
-}
-.column-hidden {
-  display: none;
-}
-.flexright {
-  max-width: 350px;
-  padding-left: 40px;
-}
 @media (max-width: 500px) {
-  .mobileWide {
+  .bodyLeftMargin {
+    margin-left: 0px;
+  }
+}
+.bodyRightMargin {
+  margin-right: 500px;
+}
+@media (max-width: 400px) {
+  .bodyLeftMargin {
+    margin-left: 0px;
+  }
+  .bodyRightMargin {
+    margin-right: 0px;
+  }
+}
+@media (max-width: 1450px) { /* 1250px */
+  .mobileView .hideMobile {
+    display: none;
+  }
+  .mobileView .maintext {
+    padding: 50px;
+  }
+  .mobileView .fullMobile {
     width: 100%;
-    display: block;
   }
-  .flexright {
-    max-width: 100%;
-    padding-left: 0px;
-    display: block;
-  }
-}
-
-#header {
-	z-index: 10001;
-}
-.displayOnload {
-  display:block !important; /* hidden until css loaded */
-}
-.content {
-  max-width: 1100px;
-  margin:0 auto;
-  font-size: 15px;
-  line-height: 1.55;
-  /* position: relative; */  /* overlapped top filters */
-}
-@media (min-width: 1800px) {
-	.content {
-	  max-width: 1500px;
-	  font-size: 18px;
-	}
-}
-.contentpadding {
-  padding-top: 25px;
-  padding-left: 40px;
-  padding-right: 40px;
-  padding-bottom: 45px;
-}
-.contentpadding a {
-  text-decoration: none;
-}
-.contentpadding a:link {
-  color: #0366d6;
-}
-.contentpadding a:visited {
-  color: #0366d6;
-}
-
-.contentwide {
-  max-width: 1400px;
-  padding-left: 10px;
-  padding-right: 10px;
-}
-.contentfull {
-  max-width: 2000px;
-}
-.content ul li {
-  margin-left: -10px;
-}
-@media (max-width: 1400px) {
-  .contentwide {
-    max-width: 1350px;
+  .mobileView .floatright {
+    width: 100%;
+    margin-left: 0px;
+    float: none;
   }
 }
-@media (max-width: 1200px) {
-
-  .content li {
-    /* Caused 10+ to be half hidden. Tried overflow: visible */
-    /* margin-left: -20px; */
+@media (max-width: 1500px) {
+  .mobileView .hideMobileSooner {
+    display: none;
   }
-}
-@media (max-width: 500px) {
-  .contentpadding {
-    padding-left: 20px;
-    padding-right: 20px;
-    min-width: 150px;
-  }
-}
-
-.container {
-  position: relative;
-  margin: 0 auto;
-  /* max-width: 1200px; */ /* makes video in rotation to short */ /* max-width will conflict with sites that use bootstrap */
-  /* Conflicts with Drupal footer
-  padding-left: 55px;
-  padding-right: 55px;
-  */
-}
-.lead {
-    font-family: 'PT Sans', sans-serif;
-    font-weight: normal;
-    color: rgb(66, 72, 79);
-    font-size: 17px;
-    font-weight: 100;
-    line-height: 1.5;
-}
-.caption {
-  font-size: 12.5px;
-  margin-bottom:27px;
-}
-
-.pageColumns {
-  overflowX: hidden; /* Allows bottom padding to apply after float:left columns */
-  overflowX: scroll; /* Allows large number of naics columns to be viewed */
-  margin-right:-30px;
-}
-.pageColumn {
-  width:33.33%;
-  float:left;
-  margin-bottom: 0px;
-}
-.full .pageColumn {
-  width:100%;
-}
-.two .pageColumn {
-  width:50%;
-}
-.pageColumnInside {
-  position: relative;
-  margin-right:40px;
-  line-height: 1.55;
-  border: 1px solid rgba(255,255,255,0);
-  font-size: 16px;
-  /* overflow: hidden; */ /* Covers indicator bar */
-}
-.pageColumns > .pageColumn:last-child {
-	margin-right:0px;
-}
-.pageColumnTitle {
-  font-size: 1.27em;
-  line-height: 1.3em;
-  margin-top: 20px;
-  margin-bottom: 16px;
-}
-@media (max-width:980px) {
-  .pageColumn, .two .pageColumn {
-    width:100%;
-    float:none;
-  }
-  .pageColumnOverflow {
-    width:100%;
-  }
-
-}
-.contentArea {
-    margin: 0px; padding: 0px; 
-    padding-left: 20px; padding-right: 20px;
-    line-height: 1.4em;
 }
 .rightside, .floatright {
   float:right;
@@ -432,6 +163,523 @@ summary::-webkit-details-marker {
     margin-left:0px !important;
   }
 }
+@media (max-width: 2200px) {
+  #flexwrapper {
+    /*display: block;*/
+  }
+  .bodyLeftMarginFull.bodyRightMargin #mapHolder {
+    float: left;
+    width: 100%;
+  }
+  .bodyLeftMarginFull.bodyRightMargin #mapHolderInner {
+    position: relative;
+    width: 100%;
+  }
+}
+@media (max-width: 1800px) {
+  /* only hide if 2 classes on body */
+  .bodyLeftMargin.bodyRightMargin .hideMobileSooner {
+    display: none;
+  }
+  .bodyLeftMargin.bodyRightMargin .floatright, .bodyLeftMargin.bodyRightMargin .floatRight {
+    float: none;
+    margin-left: 0px;
+    margin-bottom: 20px;
+  }
+  .bodyLeftMarginFull .fullNarrow, .bodyLeftMarginList .fullNarrow, .bodyRightMargin .fullNarrow {
+    width: 100%;
+  }
+}
+@media (max-width: 1400px) {
+  #hublist {
+    width: 100%;
+    padding-right: 0px;
+  }
+  .bodyLeftMarginFull #mapHolder {
+    float: left;
+    width: 100%;
+  }
+  .bodyLeftMarginFull #mapHolderInner {
+    position: relative;
+    width: 100%;
+  }
+}
+@media (max-width: 1200px) {
+  .bodyLeftMarginList #flexwrapper {
+    display: block;
+  }
+}
+
+.flexbodyX {
+  display: flex; /* for footer */
+  flex-direction: column; /* for footer */
+}
+main, .flexmain {
+    flex-grow: 1; /* for footer */
+}
+header, main, .flexfooter {
+    flex-shrink: 0; /* prevent shrinking if content is larger than the screen. */
+}
+
+table {
+  border-spacing: 0px;
+}
+td {
+  padding: 0px;
+  vertical-align: top;
+}
+textarea {
+    border-color: #777;
+}
+.textInput {
+  font-size: 15px;
+  box-sizing: border-box;
+  height: 34px;
+  min-height: 34px;
+  padding-left: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+/* Lighter: #4091dd */
+p {
+  margin-top: 0px;
+  margin-bottom: 16px;
+  /*
+  font-family: 'Open Sans', 'Helvetica Neue', Arial, Helvetica, sans-serif;
+  font-family: "Raleway", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  */
+  font-sizeX: 15px;
+}
+h1,h2,h3,h4 {
+  font-family: Raleway;
+  line-height: 1.5;
+}
+h2, h3, h4 {
+    font-family: 'PT Sans', sans-serif;
+    font-family: Raleway, Lato, "Helvetica Neue", Helvetica, "Lato", sans-serif;
+}
+h1 {
+  font-weight: 300;
+  color: #444;
+  line-height: 1.3;
+  margin-top: 10px;
+  font-size: 31px;
+  font-family: "Amaze", "Helvetica Neue", Helvetica, "Lato", sans-serif;
+}
+.h1-home {
+  font-size: 28pt;
+  font-family: "Helvetica Neue", Helvetica, "Lato", sans-serif;
+  font-weight: 200;
+}
+h2 {
+  margin-top: 0px;
+  font-weight: 500;
+  font-weight: 800;
+  font-size: 1.4em;
+  padding-top: 12px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #ddd;
+  color: rgb(77, 82, 89);
+  color: #333;
+  overflow: auto;
+}
+.flexmain h2::before { /* Prevents hashtag h2 links from being covered by site header */
+  display: block; 
+  content: " "; 
+  margin-top: -120px; 
+  height: 120px; 
+  visibility: hidden; 
+  pointer-events: none;
+}
+.flexmain section::before { /* Prevents hashtag section links from being covered by site header */
+  display: block; 
+  content: " "; 
+  margin-top: -120px; 
+  height: 120px; 
+  visibility: hidden; 
+  pointer-events: none;
+}
+#footer .container section::before { /* Correct Drupal Footer */
+  margin-top: auto;
+  height: auto;
+}
+h3 {
+  font-weight: 600; 
+  font-size: 1.3em;
+  line-height: 1.3em;
+  margin-top: 20px;
+  margin-bottom: 16px;
+  color: #000;
+  font-family: "Amaze", 'PT Sans', sans-serif;
+}
+h4 {
+  margin-top: 20px;
+  font-weight: 600;
+  font-size: 1em;
+  line-height: 26px;
+  margin-top: 15px;
+  margin-bottom: 12px;
+  color: #333;
+}
+h5 {
+  font-weight: 300;
+  font-size: 1.1em;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+h6 {
+  font-weight: 600;
+  font-size: 0.95em;
+  color: #333;
+  margin-top: 10px;
+  margin-bottom: 0px;
+}
+@media (max-width: 400px) {
+  h1 {
+    margin-top: 0px;
+  }
+}
+
+
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+  color: #ccc;
+}
+
+/* hacks for useeio widgets */
+.dark .MuiTypography-h6 {
+  color: #ccc;
+}
+.dark .MuiTypography-body1 {
+  color: #ccc;
+}
+.dark .MuiInputBase-root {
+  color: #fff;
+}
+.dark .MuiIconButton-root {
+  color: #fff;
+}
+.dark .sector-list a, .dark .sector-list a:visited {
+  color: #fff;
+}
+.dark .sector-list .indicator-group {
+  color: #bbb;
+}
+.dark .tabulator .tabulator-header {
+  background-color: transparent;
+  border-bottom: 1px solid transparent;
+}
+.dark .tabulator .tabulator-tableholder .tabulator-table {
+  background-color: #333;
+  color: #fff;
+}
+.dark .tabulator .tabulator-header .tabulator-col {
+  background-color: #000;
+  color: #fff;
+}
+.dark .tabulator .tabulator-header .tabulator-col:hover {
+  background-color: #555;
+}
+sup {
+  line-height: 0.8em;
+  font-size: 0.6em;
+}
+hr {
+    border: 0px;
+    border-top: 1px solid #ddd;
+}
+details {
+  display:inline;
+}
+summary { /* a button */
+  display: inline;
+  padding:0 5px;
+  floatX:left;
+  margin-right:8px;
+  border: 1px solid #ccc;
+}
+summary::-webkit-details-marker {
+  display: none
+}
+@media print 
+{
+  .noprint {display: none; }
+  .pagebreak {
+      clear: both;
+      page-break-after: always;
+  }
+}
+@media screen {.printonly {display: none; }}
+
+
+.table-cell, .table-cell-mobile {
+  display: table-cell;
+  vertical-align: top;
+  position: relative; /* Allows menu rollover/popups to overlap adjacent cell */
+}
+.dark .table-cell, .dark .table-cell-mobile {
+  background-colorX: #111;
+}
+@media (max-width: 800px) {
+  .table-cell {
+    display: block;
+    float: left;
+  }
+}
+
+.flex-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.flex-column {
+  display: flex;
+  flex-direction: column;
+  flex-basis: 100%;
+  flex: 1;
+  overflow: auto;
+}
+.flexright {
+  max-width: 350px;
+  padding-left: 40px;
+}
+@media (max-width: 500px) {
+  .mobileWide {
+    width: 100%;
+    display: block;
+  }
+  .flexright {
+    max-width: 100%;
+    padding-left: 0px;
+    display: block;
+  }
+}
+.num {
+  float: left;
+  padding-right: 12px;
+}
+.by {
+  display: none;
+}
+#header {
+	z-index: 10001;
+}
+.displayOnload {
+  display:block !important; /* hidden until css loaded */
+}
+.content, #observablehq-center {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-left: 18px;
+  padding-right: 18px;
+  font-size: 15px;
+  line-height: 1.55em;
+  /* position: relative; */  /* overlapped top filters */
+}
+.content pre {
+  line-height: 1.25em; /* prevents gaps in tree chart */
+}
+#observablehq-toc nav {
+  margin-top: 148px; /* when showsearch */
+  margin-top: 100px;
+  padding-top: 18px;
+}
+@media (min-width: 1800px) {
+	.content {
+	  max-width: 1500px;
+	  font-size: 18px;
+	}
+}
+.contentpadding, #observablehq-center {
+  padding-top: 25px;
+  padding-left: 66px; /* avoids overlapping left icon menu */
+  padding-right: 40px;
+  padding-bottom: 45px;
+}
+.content a, .contentfull a {
+  text-decoration: none;
+}
+.content a:link, .content a:visited, .contentfull a:link, .contentfull a:visited {
+  color: #0366d6;
+}
+.dark .content a:link, .dark .content a:visited {
+  color: #acb;
+}
+.lite { /* Also in DS */
+  background-color: #eee;
+  color:  #333;
+}
+.dark .lite {
+  background-color: #555;
+  background: #555;
+  color:  #eee;
+}
+.liteDiv a {
+  color: #333;
+}
+.greyDiv { /* Mix of light and dark text */
+  color: #fff;
+  background-color: #b1b1b1;
+}
+.greyDiv a:link, .greyDiv a:visited, .content .greyDiv a:link, .content .greyDiv a:visited {
+  color: #fff;
+  text-decoration: none;
+}
+.greyDiv b, .greyDiv .maincat, .greyDiv b a:link, .greyDiv b a:visited, .content .greyDiv b, .content .greyDiv .maincat, .content .greyDiv b a:link, .content .greyDiv b a:visited {
+  color: #333;
+}
+.greyDiv b a:hover, .greyDiv b a:visited:hover {
+  color: #fff;
+}
+.dark .greyDiv { /* Left side nav */
+  background-color: #444;
+  border: 0px;
+}
+.dark .greyDiv a:link, .greyDiv a:visited, .dark .content .greyDiv a:link, .dark .content .greyDiv a:visited {
+  color: #fff;
+}
+.dark .greyDiv b, .dark .greyDiv .maincat, .dark .greyDiv b a, .dark .greyDiv b a:visited, .dark .content .greyDiv b, .dark .content .greyDiv .maincat, .dark .content .greyDiv b a, .dark .content .greyDiv b a:visited {
+  color: #fff;
+}
+.litetext {
+  color:#888;
+}
+.darktext {
+  color:#333;
+}
+.dark .litetext {
+  color:#fff;
+}
+.dark .darktext {
+  color:#aaa;
+}
+.bodyLeftMargin .contentpadding {
+  padding-left: 30px;
+  padding-right: 30px;
+}
+.contentwide {
+  max-width: 1400px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.contentfull {
+  max-width: 2000px;
+}
+
+/* caused cropping on /feed 
+.content ul li {
+  margin-left: -10px;
+}
+*/
+@media (max-width: 800px) {
+    .content {
+      padding: 15px 30px 30px 64px;
+    }
+}
+@media (max-width: 1400px) {
+  .contentwide {
+    max-width: 1350px;
+  }
+}
+@media (max-width: 1200px) {
+
+  .content li {
+    /* Caused 10+ to be half hidden. Tried overflow: visible */
+    /* margin-left: -20px; */
+  }
+}
+@media (max-width: 800px) {
+  #headerbar .contentpadding {
+    padding-leftX: 20px;
+    padding-rightX: 0px;
+  }
+}
+@media (max-width: 600px) {
+  .contentpadding {
+    padding-left: 30px;
+    padding-right: 30px;
+    min-width: 150px;
+  }
+}
+
+.container {
+  position: relative;
+  margin: 0 auto;
+  /* max-width: 1200px; */ /* makes video in rotation to short */ /* max-width will conflict with sites that use bootstrap */
+  /* Conflicts with Drupal footer
+  padding-left: 55px;
+  padding-right: 55px;
+  */
+}
+.lead {
+    font-family: 'PT Sans', sans-serif;
+    font-weight: normal;
+    color: rgb(66, 72, 79);
+    font-size: 17px;
+    font-weight: 100;
+    line-height: 1.5;
+}
+.caption {
+  font-size: 12.5px;
+  margin-bottom:27px;
+}
+
+.pageColumns {
+  overflowX: hidden; /* Allows bottom padding to apply after float:left columns */
+  overflowX: scroll; /* Allows large number of naics columns to be viewed */
+  margin-right:-30px;
+  padding-bottom: 20px;
+}
+.pageColumn {
+  width:33.33%;
+  float:left;
+  margin-bottom: 0px;
+}
+.mobileView .pageColumn {
+  width:100%;
+}
+.full .pageColumn {
+  width:100%;
+}
+.two .pageColumn {
+  width:50%;
+}
+.pageColumnInside {
+  position: relative;
+  margin-right:40px;
+  line-height: 1.55;
+  border: 1px solid rgba(255,255,255,0);
+  font-size: 16px;
+  padding-top: 14px;
+  padding-bottom: 18px;
+  /* overflow: hidden; */ /* Covers indicator bar */
+}
+.pageColumns > .pageColumn:last-child {
+	margin-right:0px;
+}
+.pageColumnTitle {
+  font-size: 1.27em;
+  line-height: 1.3em;
+  margin-top: 20px;
+  margin-bottom: 16px;
+}
+@media (max-width:980px) {
+  .pageColumn, .two .pageColumn {
+    width:100%;
+    float:none;
+  }
+  .pageColumnOverflow {
+    width:100%;
+  }
+  .pageColumnInside {
+    margin-right: 0px;
+  }
+}
+.contentArea {
+    margin: 0px; padding: 0px; 
+    padding-left: 20px; padding-right: 20px;
+    line-height: 1.4em;
+}
+
 .litePanel {
     background-color: #eee; /* also set .litePanelFadeOut 238 */
     overflow:auto;
@@ -441,13 +689,15 @@ summary::-webkit-details-marker {
   position:absolute;
   bottom:0;
   left:0;
-  right:0;
+  right: 0;
+  /* right:0; This may cover map zoom. Swicth to flex rows instead to put at bottom of #hublist */
   z-index:999;
   background-color:rgba(238, 238, 238, 0.7);
   background: linear-gradient(to bottom, rgba(238,238,238,0) 0%,rgba(238,238,238,1) 100%);
 }
-.darkPanel {
-    background-color: #ddd;
+.dark .litePanelFadeOut {
+  background-color:rgba(44,44,44,0.7);
+  background: linear-gradient(to bottom, rgba(44,44,44,0) 0%,rgba(44,44,44,1) 100%);
 }
 mark {
   padding:4px 8px 4px 8px;
@@ -458,7 +708,7 @@ code {
   padding: 2px  5px;
   overflow: scroll;
 }
-content .js, pre code { /* Prevents .js from impacting js class within Drupal body tag */
+content .js, pre code, .codetext { /* Prevents .js from impacting js class within Drupal body tag */
   background-color: #eee;
   padding:15px;
   border-left: 4px solid #137AD1;
@@ -468,6 +718,21 @@ content .js, pre code { /* Prevents .js from impacting js class within Drupal bo
   font-family: monospace;
   /* white-space: pre-wrap; */ /* Causes Drupal to have large empty div's at top */
 }
+.codetext {
+  width:100%;
+  overflow:auto;
+  background-color: #eee;
+  padding: 15px;
+  border: none;
+  border-left: 4px solid #137AD1 !important;
+  font-family: monospace;
+  font-size: 15px;
+  line-height: 1.55;
+}
+.dark code, .dark .codetext {
+  color: #ddd;
+  background-color: #111;
+}
 .link {
   color:#4091dd;
   /*
@@ -475,16 +740,14 @@ content .js, pre code { /* Prevents .js from impacting js class within Drupal bo
   */ /* thicker, darker */
   font-weight: 600;
 }
-
+.darkDivText {
+  color: #ccc;
+}
+.darkDivText a:link, .darkDivText a:visited {
+  color: #acb;
+}
 #hero-content {
-  /*
-  position: absolute;
-  top: 60px;
-  left: 60px;
-  right: 60px;
-  */
-  padding: 60px;
-  padding-bottom: 40px;
+  padding: 45px 60px 40px 60px;
 }
 #hero-mini {
   float: right;
@@ -499,15 +762,19 @@ content .js, pre code { /* Prevents .js from impacting js class within Drupal bo
 #hero-rect {
   float: left;
   background-color: rgba(255, 255, 255, 0.90);
-  background-color: rgba(11, 11, 11, 0.93);
+  background-color: rgba(0, 0, 0, 0.95);
   border-radius: 40px;
   max-width: 600px;
   padding: 30px 50px 25px 50px;
   margin-bottom: 30px;
-  /* marginX: 0 auto; */ /* To Center */
   color: #fff;
 }
-#hero-rect h3 {
+@media (max-width: 1400px) {
+  .bodyLeftMargin #hero-rect, .bodyRightMargin #hero-rect {
+      max-width: 450px;
+  }
+}
+#hero-rect h3, #hero-rect select {
   color: #fff;
 }
 #hero-rect a:link, #hero-rect a:visited {
@@ -539,7 +806,6 @@ content .js, pre code { /* Prevents .js from impacting js class within Drupal bo
     background-color: transparent;
     border: 1px solid transparent;
     padding: 0.375rem 1rem;
-    /* font-size: 0.9375rem; Made too small on ppe */
     line-height: 1.5;
     border-radius: 2rem;
     -webkit-transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
@@ -547,11 +813,11 @@ content .js, pre code { /* Prevents .js from impacting js class within Drupal bo
     transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
     transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
     cursor: pointer;
-    margin-right:4px;
+    margin-right:6px;
     margin-bottom:8px;
 }
 .btn:link, .btn:visited, .contentpadding .btn:link, .contentpadding .btn:visited {
-  color: #fff;
+  color: #fff !important; 
   text-decoration: none;
 }
 #hero-rect .btn:link, #hero-rect .btn:visited {
@@ -569,22 +835,53 @@ content .js, pre code { /* Prevents .js from impacting js class within Drupal bo
   border-radius: 1.5rem;
   padding: 0.375rem 1.3rem;
 }
+
+/* color is !important so surrounding a href color from menu.css does not override */
 .btn-primary {
-    color: #fff;
+    color: #fff !important;
     background-color: #6fa1d8;
+    background-colorX: #375a7f;
+    background-colorX: #579;
     border-color: #6fa1d8;
+    border-colorX: #375a7f;
+}
+.btn-primary:visited {
+    color: #fff !important;
 }
 .btn-primary:hover {
     background-color: #91bbef;
+    background-color: #6fa1d8;
     border-color: #91bbef;
+    border-color: #6fa1d8;
 }
+.btn-magenta {
+  /* Closest websafe color is: #cc66cc. https://www.colorhexa.com/b455b4 */
+  background-color: #b455b4;
+  border-color: #b455b4;
+
+  /*
+  font: 600 16px/1.8 "Lato", sans-serif !important;
+  color: #fff !important;
+  background-color: rgb(180, 85, 180);
+  border-radius: 20px;
+  height: 40px !important;
+  display: inline-block;
+  padding: 6px 20px 10px 20px !important;
+  margin-left: 9px;
+  */
+}
+.btn-magenta:hover {
+  background-color: purple !important;
+  text-decoration: none;
+}
+
 .btn-success {
-    color: #fff;
+    color: #fff !important;
     background-color: #a6c36e;
     border-color: #a6c36e;
 }
 .btn-warning {
-    color: #fff;
+    color: #fff !important;
     background-color: #e6853d;
     border-color: #e6853d;
 }
@@ -593,7 +890,7 @@ content .js, pre code { /* Prevents .js from impacting js class within Drupal bo
     border-color: #ef954d;
 }
 .btn-danger {
-    color: #fff;
+    color: #fff !important;
     background-color: #d34564;
     border-color: #d34564;
 }
@@ -602,20 +899,20 @@ content .js, pre code { /* Prevents .js from impacting js class within Drupal bo
     border-color: #f15a7f;
 }
 .btn-white {
-    color: #333;
+    color: #333 !important;
     background-color: #fff;
     border-color: #ccc;
 }
-.btn-white:hover {
-    background-color: #b9da79;
-    border-color: #b9da79;
-    color: #fff !important;
-}
 .btn-white:link, .contentpadding .btn-white:link {
-  color: #333;
+  color: #333 !important;
 }
 .btn-white:visited, .contentpadding .btn-white:visited {
-  color: #333;
+  color: #333 !important;
+}
+.btn-white:hover, .btn-white:link:hover, .contentpadding .btn-white:link:hover, .btn-white:visited:hover, .contentpadding .btn-white:visited:hover {
+    color: #fff !important;
+    background-color: #a6c36e;
+    border-color: #a6c36e;
 }
 @media (max-width: 500px) {
   .btn {
@@ -625,6 +922,11 @@ content .js, pre code { /* Prevents .js from impacting js class within Drupal bo
 .nav {
   list-style: none;
   font-size: 13.5px;
+}
+
+.pageLinks a {
+  display: inline;
+  float: none;
 }
 .nav>li>a {
   padding: 8px;
@@ -664,21 +966,11 @@ content .js, pre code { /* Prevents .js from impacting js class within Drupal bo
   width:100%;
   */
 }
-#showSide {
-	pointer-events: auto;
-	cursor: pointer;
-	padding: 9px 12px 2px 10px;
-	height: 37px;
-  opacity: .3;
-}
-#showSide:hover {
-  opacity: .7;
-}
 .close-X-sm {
   cursor:pointer;
-  margin:6px 6px 11px 22px;
+  padding:5px 9px 12px 12px;
   font-size:18px;
-  color:#444;
+  color:#ddd;
   /* If code appear instead of x, check if some other font is being applied. Try activating this line to fix (copied from an x that worked).
   font-family: 'Nunito Sans', Lato, 'Helvetica Neue', Helvetica, Arial, sans-serif;
   */
@@ -700,6 +992,19 @@ content .js, pre code { /* Prevents .js from impacting js class within Drupal bo
     border-radius: 28px;
     padding: 20px;
 }
+.dark .cardstyle {
+    background: #555;
+}
+.dark .menuBuddyRight {
+  background: #666;
+}
+.dark .sideMenuColumn {
+  background: #444;
+  color: #fff;
+}
+.dark .sideMenuColumn .layerSection {
+  color: #fff;
+}
 @media (max-width: 1200px) {
     .pagecard {
         paddingX:40px;
@@ -719,9 +1024,9 @@ content .js, pre code { /* Prevents .js from impacting js class within Drupal bo
 }
 @media (max-width: 800px) {
   .leftLogo {
-      float:none;
-      margin-right:20px;
-      max-width: 150px;
+    float:none;
+    margin-right:20px;
+    max-width: 150px;
   }
   .narrowscreen {
     width:100% !important;
@@ -739,7 +1044,6 @@ content .js, pre code { /* Prevents .js from impacting js class within Drupal bo
   z-index: 999999;
   top:70%;
   left:50px;
-  max-height:200px;
   padding: 8px 8px 8px 8px;
   color:#fff;
   background: rgba(0,0,0,.8);
@@ -749,23 +1053,23 @@ content .js, pre code { /* Prevents .js from impacting js class within Drupal bo
 #log_display textarea {
   color:#fff;
   background: rgba(0,0,0,0);
-  min-width: 400px;
+  min-width: 600px;
   min-height: 150px;
   overflow:scroll;
   border:1px solid #ccc;
 }
 .bgimg {
-    position: relative;
-    opacity: 0.65;
-    background-attachment: fixed;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-sizeX: cover;
-    background-position: 0 100px; /* adjust for page banner - BUGBUG */
-    background-size: 100% auto;
-    borderX: 2px solid blue;
+  position: relative;
+  opacity: 0.65;
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-sizeX: cover;
+  background-position: 0 54px; /* Under #mapFilters #filterFields headerbar */
+  background-size: 100% auto;
+  borderX: 2px solid blue;
 
-    opacityX: 0.2;
+  opacityX: 0.2;
 }
 @media(max-width:1022px) {
   .bgimg {
@@ -774,14 +1078,15 @@ content .js, pre code { /* Prevents .js from impacting js class within Drupal bo
 }
 @media(max-width:800px) {
   .bgimg {
-    width: 200%; /* taller on mobile */
+    widthX: 200%; /* taller on mobile */
   }
 }
 /* Turn off parallax scrolling for tablets and phones */
 @media only screen and (max-device-width: 1024px) {
-    .bgimg {
-        background-attachment: scroll;
-    }
+  .bgimg {
+      background-attachment: scroll;
+      background-position: 0 0; /* Prevents space above img */
+  }
 }
 .herocenter {
   position: absolute;
@@ -830,15 +1135,42 @@ content .js, pre code { /* Prevents .js from impacting js class within Drupal bo
 
 /* Temp until io renamed in useeio-widget */
 .input-output input[type="text"], .input-output input[type="search"], .input-output select, select {
-    font-size: 18px;
-    border: 1px solid lightgray;
-    border-radius: 4px;
-    min-height: 34px;
-    margin-right: 15px;
-    padding: 0 5px 0 10px;
-    padding-top: 4px; /* Firefox */
+  font-size: 18px;
+  border: 1px solid lightgray;
+  border: 1px solid #444;
+  border-radius: 18px;
+  min-height: 34px;
+  padding: 0 5px 0 10px;
+  padding-top: 4px; /* Firefox */
+  margin-right: 5px;
+  margin-bottom: 10px;
+
+  padding-right: 28px; /* Applies when text reaches right side */
+  appearance: none; /* Remove default arrow */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: white url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 5px center; /* Custom arrow */
+  background-size: 24px; /* Size of the custom arrow */
+}
+.dark select {
+  background-color: #000;
+  color: #fff;
+  /* white arrow */
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="white" d="M7 10l5 5 5-5z"/></svg>') no-repeat right 5px center; /* Custom white arrow */
+  background-color: #888;
 }
 
+.notdark {
+  color: #333;
+}
+.notdark .content a:link, .notdark .content a:visited {
+  color: #0366d6 !important;
+}
+.notdark select {
+  color: #333 !important;
+  background: #fff url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 5px center; /* Custom arrow */
+  
+}
 
 #logospace {
   float:left;
@@ -908,12 +1240,13 @@ content .js, pre code { /* Prevents .js from impacting js class within Drupal bo
   font-weight: 100;
   color: #777;
   letter-spacing: 2px;
-  padding-bottom: 6px;
+  padding-bottom: 5px;
 
   /* Align vertically */
   position: absolute;
   top: 50%;
   transform: translate(0%, -50%);
+  min-width: 250px; /* Prevents being too narrow in OpenWebUI */
 }
 
 #headerLocTitle {
@@ -923,8 +1256,43 @@ content .js, pre code { /* Prevents .js from impacting js class within Drupal bo
   font-size: 22px;
 }
 .headerbar {
-  background-color: rgb(230 230 230/50%);
+  background-color: rgb(230 230 230/50%); /* Don't use. Doesn't overlap left side nav */
+  background-color: rgb(239 239 239);
+  right: 0px;
+  left: 0px;
+  top: 0px;
   pointer-events: auto;
+}
+.filterFieldsHolderFixed {
+  background-color: rgb(239 239 239);
+}
+.filterFieldsHolderFixed .filterClickActive {
+  border-radius: 20px;
+  border: 0px;
+  border-right: 1px solid lightgray;
+  border-bottom: 1px solid lightgray;
+  padding: 0px 9px 0px 12px;
+  min-height: 34px !important;
+  vertical-align: baseline;
+  background-color: #fff;
+  color: #686868;
+  text-shadow: none;
+  height: auto;
+}
+.filterFieldsHolderFixed #showSideTabsInBar {
+  display: block !important;
+}
+.filterFieldsBodyTop {
+  margin-top: 48px
+}
+.bodyLeftMargin .headerbar, .bodyLeftMargin .filterFieldsHolderFixed {
+  /* left: 220px; */
+}
+.headerbar a:link, .headerbar a:visited {
+    color: #777;
+}
+.headerbar a:link:hover, .headerbar a:visited:hover {
+    color: #444;
 }
 /* Seems that brave darkmode ignores the use of prefers-color-scheme: dark */
 @media (not (prefers-color-scheme: dark)) {
@@ -934,44 +1302,125 @@ content .js, pre code { /* Prevents .js from impacting js class within Drupal bo
     border-bottom: 1px solid rgb(238,238,238);
   }
 }
-
+.dark .headerbar {
+  background: #333;
+  border-bottom: 1px solid #333;
+}
 .headerbarhide {
   display: none !important;
 }
-@media (max-width: 600px) {
+/*
+@media (max-width: 800px) {
   .headerbar {
     padding-left: 20px;
-    padding-right: 20px;
+    padding-right: 0px;
   }
 }
+*/
 @media (max-width: 380px) {
   .showSearch {
     display: none;
   }
-  #headerLogo {
-    margin-left: 24px;
+}
+
+#headerIcons {
+  color:#aaa;
+  float:left;
+  margin-top:14px;
+}
+#headerIcons:hover {
+  background-color: #ddd;
+}
+.headerbarheight {
+  /* height:82.5px; */
+}
+.headeroffset { /* Does not include bar */
+  height:79px;
+}
+#local-header {
+  /* min-height:82.5px; */ /* Caused space under current header */
+  min-height:79px;
+}
+@media (max-width: 600px) {
+  #headerIcons {
+    margin-top:4px;
+  }
+  .headerbarheight {
+    height:64px;
+  }
+  .headeroffset {
+    height:64px;
+  }
+  #local-header {
+    min-height:64px; 
   }
 }
 
-.headerbarheight {
-  height:100px;
-}
-.headeroffset { /* Does not include bar */
-  height:100px;
-}
 .filters-margin {
   margin: 0 auto;
   max-width:1000px;
 }
 
 /* HEADER */
+
 .upperIcons {
   margin-right: 18px;
 }
-.upperIcons > div {
-  padding:32px 6px 32px 6px;
-  padding-left:37px;
+@media (min-width: 300px) {
+  #headerLogoholder {
+    min-widthX: 200px;
+  }
 }
+@media (max-width: 600px) {
+  .upperIcons {
+    margin-right: 8px;
+  }
+  #headerLogoholder {
+    padding-leftX: 59px;
+  }
+  #showNavColumn {
+    display: none !important;
+  }
+}
+@media (max-width: 300px) {
+  #headerLocTitleHolder {
+    display: none;
+  }
+  .headerLogoDesktop, #headerLogoholder {
+    display: none;
+  }
+}
+
+/* .upperIcons > */
+.iconPadding {
+  height: 64px;
+  min-width: 58px;
+  text-align: center;
+  /* padding: 5px 26px 2px 12px; */
+  cursor: pointer;
+  color: #888;
+}
+.iconPadding:hover {
+  color: #222;
+}
+.dark .iconPadding {
+  color: #ccc;
+}
+.dark .iconPadding:hover {
+  color: #fff;
+}
+.darkDivText .iconPadding:hover {
+  color: #fff;
+}
+
+#goatIcons .iconPadding {
+    height: 64px;
+    min-width: 58px;
+    text-align: center;
+    padding: 16px 12px 2px 12px;
+    cursor: pointer;
+}
+
 .upperIcons > div:hover {
   cursor: pointer;
 }
@@ -1081,13 +1530,72 @@ content .js, pre code { /* Prevents .js from impacting js class within Drupal bo
 
 
 /* json to html display */
+.valueonly {
+  padding-top: 5px;
+  min-width: 80px;
+}
 .titlecell {
-  margin-top:5px;
+  padding: 5px 12px 0 5px;
   float:left;
   clear:both;
-  min-width: 200px;
+  min-width: 180px;
   font-weight: 500;
 }
+.floating-object {
+  float:left;
+  margin-right:10px;
+  margin-bottom:10px;
+}
+.floating-object.rowlevel2 {
+  padding-bottom: 10px;
+  border-bottom:1px solid #ccc;
+}
+.objectcell .titlecell {
+  /* too narrow for usda */
+  min-widthX: 140px;
+}
+.objectcell .rowlevel2.titlecell {
+  min-width: 150px;
+}
+.objectcell .rowlevel3.titlecell, .objectcell .rowlevel4.titlecell {
+  overflow: hidden; /* for usda */
+}
+.rowlevel7.objectcell {
+  float: left;
+}
+.rowlevel3.objectcell > div, .rowlevel4.objectcell > div, .rowlevel5.objectcell > div, .rowlevel7.objectcell > div, .rowlevel8.objectcell.div  {
+  border-bottomX:1px solid #ccc;
+}
+.objectcell-lines > .objectcell-line { /* immediate child only */
+  border-bottom:1px solid #ccc;
+}
+.celltop {
+  margin-top: 4px;
+}
+.barTitle {
+  background:#999;
+  color:#fff;
+  padding:4px;
+  padding-left:10px;
+  min-width:255px;
+}
+.valueimg {
+  width: 100%;
+  max-width: 600px;
+}
+.rowlevel3.celltop {
+  border: 0px;
+}
+.rowlevel2 > .barTitle, .rowlevel3 > .barTitle {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+/*
+.objectcell.objectcell.objectcell .barTitle {
+  background:none;
+  font-weight: bold;
+}
+*/
 .rightcell {
   margin-top:5px;
   overflow: auto;
@@ -1112,16 +1620,25 @@ content .js, pre code { /* Prevents .js from impacting js class within Drupal bo
 .json_to_html_table .rightcell:first-of-type {
   border-top: 0px #fff solid;
 }
-.level1 {
-  color: #fff;
-  background-color: #777;
-  font-size: 11pt;
-  padding:6px;
-  margin-top:14px; /* margin-bottom breaks alignment of clear:both on titlecell div */
+.rowlevel2 {
+  margin-bottom:10px;
   cursor: pointer;
 }
-.level2 div:last-of-type {
+.rowlevel2.keyonly {
+  font-size: 18px;
+  float: left;
+}
+.valueonly {
+  padding-right: 5px;
+  overflow: auto;
+}
+.rowlevel2.valueonly {
+  font-size: 16px;
+  overflow: auto;
+}
+.rowlevel2 div:last-of-type {
   border-bottom: 0px #fff solid !important;
+  /* Add a shadow here that using a negative margin to get hidden by next .bartitle */
 }
 .two-wide {
   overflow: hidden;
@@ -1133,8 +1650,8 @@ content .js, pre code { /* Prevents .js from impacting js class within Drupal bo
 }
 .two-wide div img {
   width: 100%;
-  padding-right:12px;
-  padding-bottom:12px;
+  margin-rightX:12px;
+  margin-bottom:24px;
 }
 @media (max-width: 1400px) {
   .two-wide div {
@@ -1147,4 +1664,128 @@ content .js, pre code { /* Prevents .js from impacting js class within Drupal bo
     width: 100% !important;
     clear: none !important;
   }
+}
+
+/* The switch - the box around the slider */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 28px;
+}
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+input:checked + .slider {
+  background-color: #2196F3;
+}
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+input:checked + .slider:before {
+  -webkit-transform: translateX(18px);
+  -ms-transform: translateX(18px);
+  transform: translateX(18px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+.mdTable table {
+  border: 1px solid #ddd;
+  padding: 20px;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+}
+#readmeDiv tr, .mdTable tr {
+  text-align: left;
+}
+#readmeDiv td, #readmeDiv th, .mdTable td, .mdTable th {
+  text-align: left;
+  padding-right: 20px;
+}
+#readmeDiv tr td, .mdTable tr td
+{
+  border-bottom: 1px solid #ddd;
+}
+#readmeDiv tr:last-child td, .mdTable tr:last-child td {
+  border-bottom: 0px solid #ddd;
+}
+.large-list {
+  font-size: 16px;
+}
+.large-list h1 {
+  font-weight: 700;
+  font-family: Roboto,Inter,-apple-system,system-ui,BlinkMacSystemFont,Segoe UI,Helvetica Neue,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
+}
+.large-list h2 {
+  position: relative;
+  font-weight: 400;
+}
+.large-list h3 {
+  font-size: 1.1em;
+}
+.large-list .num {
+  position: absolute;
+  font-size: 17px;
+  background-color: #999;
+  color: #fff;
+  padding-top: 4px;
+  padding-left: 8px;
+  width: 25px;
+  height: 25px;
+  line-height: 16px;
+  margin-right: 8px;
+  left: 0px;
+  bottom: 12px;
+  border-radius: 13px;
+  display: block;
+}
+.large-list .txt {
+  margin-left: 33px;
+}
+
+/* Hide vertical lines in Tabulator grid */
+.tabulator .tabulator-row .tabulator-cell {
+    border-right: none !important;
+}
+.dark .tabulator .tabulator-row .tabulator-cell {
+    border-bottom: 1px solid #555;
+    background-color: #333;
+}
+/* Hide vertical lines in the column headers */
+.tabulator .tabulator-header .tabulator-col {
+    border-right: none !important;
 }

@@ -147,14 +147,8 @@ body {
 	color:#555;
 	padding: 7px 8px 7px 8px;
 }
-.catList > div {
-	padding: 7px 12px 7px 18px;
-	border: solid 1px #fff;
-	border-radius: 6px;
-}
-.catList > div:hover {
-	background: #f3f3f3;
-	cursor: pointer;
+.catList .catListCurrent {
+	background-color: red;
 }
 #catListClone .catList {
 	width:100%;
@@ -209,7 +203,7 @@ body {
 }
 .catListSelected {
 	border: solid 1px #aaa !important;
-	background-color: #fff;
+	background-color: #333;
     border-left: solid 5px #aaf !important;
 } 
 #resultsPanel {
@@ -237,7 +231,6 @@ input[type="checkbox" i] {
 iframe {
     display: block;
     border: none;
-    /* min-height: 94vh; */ /* avoid for Google Yolo iframe login */
     width: 100%;
 }
 #catListHolder {
@@ -340,4 +333,7 @@ iframe {
 	border-bottom: 10px solid #fff;
 	margin-top: 1px;
 	z-index: 9999;
+}
+.dark .uparrow-grey, .dark .uparrow-white {
+	border-bottom: 10px solid #555;
 }

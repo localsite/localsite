@@ -1,6 +1,6 @@
-## Integration between Websites
+# Integration between Websites
 
-<a href="https://github.com/modelearth/localsite/" target="_parent">The Localsite Framework</a> is designed to allow easier integration between multiple Github repos by using hash values to share settings.  
+<a href="https://github.com/modelearth/localsite/" target="_parent">The Localsite Framework</a> uses hash values to share settings between Github submodule repos.  
 
 **hashChangeEvent** - triggers independent widgets when the URL hash is changed both programmatically and by the user.    
 
@@ -18,5 +18,5 @@ updateHash({"go":"bioeconomy"}); - Only hash updated.
 
 **localObject** - Share client-side datasets using state and county geo id's based on 2-digit country codes followed by fips numbers.  
 
-**tabulator** - Sortable tables rendered quickly from datasets with 100,000+ rows. <a href="../info/data/">data samples</a>
+**Tabulator** - Sortable tables rendered quickly from datasets with 100,000+ rows. <a href="../../data-pipeline/timelines/tabulator/">Timeline Grid Sample</a>
 

@@ -56,3 +56,11 @@
 	overflow: hidden;
 	max-height: 16px;
 }
+@media (max-width: 1400px) {
+	#impactIconsHolder {
+		width: 100%;
+	}
+}
+.region_service {
+	font-weight:1000;
+}

@@ -1,15 +1,24 @@
-## Input-Output Widgets
+# Localsite Repo
 
-Creating websites should be fun - without waiting for build commands.  The&nbsp;[localsite&nbsp;repo](https://github.com/modelearth/localsite/) provides a static framework for displaying community data from fast&nbsp;json&nbsp;APIs, Google Sheets, and .CSV files in our <a href="https://github.com/modelearth/community-data/" target="_parent">community data repo</a>.  
+## Localsite Nav
+
+The&nbsp;[localsite&nbsp;repo](https://github.com/modelearth/localsite/) provides a static framework for displaying navigation and maps from json&nbsp;APIs, Google Sheets, and&nbsp;.CSV&nbsp;files.
 
 ## Get Involved
 
-- [Local Webroot Setup](start/)   
+[Model.Earth](https://model.earth)  
+[Local Webroot Setup](https://model.earth/localsite/start/)  
+[Current Project Areas](https://model.earth/projects/)
 
-- [Widgets for Community Websites](https://model.earth/io/charts/)   
+## Embed Datascapes
 
-- [Sustainable Communities Web Challenge](https://model.earth/community/challenge/)  
+1\. Choose a layer to show initially. Example:
+[show=farmfresh](map/#show=farmfresh) - Currently hardcoded in map.js.
 
-- [Current Project Areas](https://model.earth/community/projects/)  
-<br>
+2\. Optionally include a #datascape div to position in page.
 
+3\. Optionally set the following to true or false. 
+These are applied by localsite.js:  
+
+showheader - Top bar including logo.
+showsearch - Display search bar with filters.

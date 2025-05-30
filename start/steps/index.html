@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Getting Started - Localsite Setup</title>
+<link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link type="text/css" href="../../css/base.css" rel="stylesheet" id="/localsite/css/base.css" />
+<script type="text/javascript" src="../../js/localsite.js?showheader=true"></script>
+
+<script>
+// About localStorage
+// https://blog.logrocket.com/localstorage-javascript-complete-guide/
+var checkboxIds = ["localsiteForked", "homeForked", "profileForked", "data-commonsForked", "projectsForked", "requestsForked", "realitystreamForked", "marioForked", "feedForked", "ioForked", "useeio.jsForked", "planetForked", "earthscapeForked", "openWebUIForked", "data-pipelineForked", "community-dataForked"];
+function updateGitCmds() {
+    // Get the value of the git account input field
+    var gitAccount = document.getElementById("gitAccount").value;
+    localStorage.gitAccount = gitAccount ;
+    if (gitAccount == "") { 
+      gitAccount = "[YOUR GITHUB ACCOUNT]";
+    }
+
+    // Loop through each checkbox
+    let lineIndex = 0;
+    let checkForks = [];
+    checkboxIds.forEach(function(checkboxId) {
+        let checkbox = document.getElementById(checkboxId);
+        let repoName = checkboxId.replace("Forked","");
+        let branch = "main";
+        let repoAcct = "modelearth";
+        if (repoName == "openWebUI") {
+          repoAcct = "datascape";
+        }
+        var updatedLine = "git clone https://github.com/" + repoAcct + "/" + repoName + " " + repoName; //  + " &&"
+        //var updatedLineRefresh = "git pull https://github.com/modelearth/" + repoName + " " + branch + " &&";
+        var climbout = "cd ";
+        if (repoName == "localsite") { // Except for first one
+          climbout = "cd ";
+        }
+        var updatedLineRefresh = climbout + repoName + " && git pull https://github.com/" + repoAcct + "/" + repoName + " && cd ../";
+        if (checkbox.checked) {
+            // If checkbox is checked, construct the updated line
+            updatedLine = "git clone https://github.com/" + gitAccount + "/" + repoName + " " + repoName;
+            //updatedLineRefresh = "git pull https://github.com/" + gitAccount + "/" + repoName + " " + branch + " &&";
+            updatedLineRefresh = climbout + repoName + " && git pull https://github.com/" + gitAccount + "/" + repoName + " && cd ../";
+            checkForks.push(checkboxId);
+        }
+        // Get the current values of the textareas
+        var currentCmd = document.getElementById("cloneCmd").value;
+        var refreshCmd = document.getElementById("refreshCmd").value;
+
+        // Split the textarea value by lines
+        var linesClone = currentCmd.split("\n");
+        var linesRefresh = refreshCmd.split("\n");
+
+        // Replace the third line with the updated line
+        linesClone[lineIndex] = updatedLine;
+
+        //linesRefresh[(lineIndex*2)+1] = updatedLineRefresh; // When two lines
+        linesRefresh[(lineIndex)] = updatedLineRefresh;
+
+        // Join the lines back together and update the textareas
+        let updatedCmd = linesClone.join("\n");
+        document.getElementById("cloneCmd").value = updatedCmd;
+        let refreshedCmd = linesRefresh.join("\n");
+        document.getElementById("refreshCmd").value = refreshedCmd;
+
+        // Save changes to the checkboxes
+        localStorage.gitsForked = JSON.stringify(checkForks);
+        lineIndex++;
+    });
+}
+
+
+waitForElm('#gitAccount').then((elm) => {
+  
+  // Create and append copy icon
+  var copyIcon = document.createElement("span");
+  copyIcon.innerHTML = "&#x1F4CB;"; // Unicode for clipboard icon
+  copyIcon.style.position = "absolute";
+  copyIcon.style.bottom = "5px";
+  copyIcon.style.right = "5px";
+  copyIcon.style.cursor = "pointer";
+  copyIcon.title = "Copy to Clipboard";
+  document.getElementById("cloneCmd").parentNode.appendChild(copyIcon);
+
+  // Add click event listener to copy icon
+  copyIcon.addEventListener("click", function() {
+    var textarea = document.getElementById("cloneCmd");
+    textarea.select();
+    document.execCommand("copy");
+    alert("Text copied to clipboard!");
+  });
+  let hash = getHash();
+  if (hash.git) {
+    document.getElementById("gitAccount").value = hash.git;
+  } else if (typeof localStorage.gitAccount != 'undefined') {
+    document.getElementById("gitAccount").value = localStorage.gitAccount;
+  }
+  if (localStorage.gitsForked) {
+    checkForks = JSON.parse(localStorage.gitsForked);
+    checkForks.forEach(function(checkboxId) {
+      var checkbox = document.getElementById(checkboxId);
+      if (checkbox) {
+          // If checkbox exists, check it
+          checkbox.checked = true;
+      }
+    });
+  }
+  updateGitCmds(); // Insert GitHub name into cmds
+
+  // Check default boxes if no account and no boxes checked yet
+  if (document.getElementById("gitAccount").value == "") {
+    checkboxFound = false;
+    checkboxIds.forEach(function(checkboxId) {
+      let checkbox = document.getElementById(checkboxId);
+      if (checkbox.checked) {
+          // If checkbox exists, check it
+          checkboxFound = true;
+      }
+      //alert(document.getElementById("gitAccount").value);
+    });
+    if (!checkboxFound) {
+      $("#localsiteForked").prop( "checked", true );
+      $("#ioForked").prop( "checked", true );
+    }
+  }
+});
+</script>
+
+<style>
+</style>
+</head>
+
+<body>
+
+<section id="steps"></section>
+<div class="content contentpadding">
+  <div id="readmeDiv"></div>
+</div>
+
+<script>
+  loadMarkdown("README.md", "readmeDiv", "_parent");
+  waitForVariable('steps', function () {
+    setTimeout(() => {
+      $(window). scrollTop(0); // Fixes unexplainable loading in mid-page
+    },500);
+    setTimeout(() => {
+      $(window). scrollTop(0); // In case prior occured too soon.
+    },1500);
+  });
+</script>
+
+</body>
+</html>
