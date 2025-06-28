@@ -1,5 +1,3 @@
-## Location Nav
-
 The&nbsp;[localsite&nbsp;repo](https://github.com/modelearth/localsite/) provides a static framework for displaying navigation and maps from json&nbsp;APIs, Google Sheets, Excel and&nbsp;.CSV&nbsp;files.
 
 ## Get Involved
