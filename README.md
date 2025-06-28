@@ -14,8 +14,8 @@ The&nbsp;[localsite&nbsp;repo](https://github.com/modelearth/localsite/) provide
 
 2\. Optionally include a #datascape div to position in page.
 
-3\. Optionally set the following to true or false. 
+3\. Optionally set the following to true or false.  
 These are applied by localsite.js:  
 
-showheader - Top bar including logo.
+showheader - Top bar including logo.  
 showsearch - Display search bar with filters.
