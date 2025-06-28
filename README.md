@@ -4,7 +4,7 @@ The&nbsp;[localsite&nbsp;repo](https://github.com/modelearth/localsite/) provide
 
 [DreamStudio](https://dreamstudio.com) - Collaborative Data Science  
 [Model.Earth](https://model.earth) - Environmental Impacts  
-[MemberCommons.org](https://MemberCommons.org) - Collaborative Partner Tools  
+[MemberCommons](https://MemberCommons.org) - Collaborative Partner Tools  
 [Webroot Setup](https://model.earth/localsite/start/) - Starter Samples  
 
 ## Embed Datascapes
